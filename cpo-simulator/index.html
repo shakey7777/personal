@@ -9,68 +9,104 @@
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg: #0f1117; --bg2: #181c27; --bg3: #1e2335;
-    --border: #2a3050; --accent: #4fc3f7; --accent2: #81d4fa;
-    --green: #66bb6a; --red: #ef5350; --yellow: #ffa726;
-    --text: #e8eaf6; --text2: #8c9abf; --text3: #5a6490;
-    --font: 'Noto Sans KR', sans-serif; --mono: 'JetBrains Mono', monospace;
+    --bg:#0f1117; --bg2:#181c27; --bg3:#1e2335;
+    --border:#2a3050; --accent:#4fc3f7;
+    --green:#66bb6a; --red:#ef5350; --yellow:#ffa726; --purple:#ce93d8;
+    --text:#e8eaf6; --text2:#8c9abf; --text3:#5a6490;
+    --font:'Noto Sans KR',sans-serif; --mono:'JetBrains Mono',monospace;
   }
-  body { background:var(--bg); color:var(--text); font-family:var(--font); font-size:14px; min-height:100vh; padding:24px 20px 40px; }
-  header { text-align:center; margin-bottom:28px; padding-bottom:20px; border-bottom:1px solid var(--border); }
-  header h1 { font-size:22px; font-weight:700; letter-spacing:-0.3px; }
+  body { background:var(--bg); color:var(--text); font-family:var(--font); font-size:14px; padding:24px 20px 60px; }
+
+  header { text-align:center; margin-bottom:24px; padding-bottom:18px; border-bottom:1px solid var(--border); }
+  header h1 { font-size:22px; font-weight:700; }
   header h1 span { color:var(--accent); }
-  header p { margin-top:6px; font-size:12px; color:var(--text3); font-family:var(--mono); }
-  .tabs { display:flex; gap:6px; margin-bottom:20px; background:var(--bg2); border-radius:10px; padding:4px; border:1px solid var(--border); }
-  .tab { flex:1; padding:8px 0; border:none; border-radius:7px; background:transparent; color:var(--text2); font-family:var(--font); font-size:13px; cursor:pointer; transition:all .2s; }
+  header p { margin-top:5px; font-size:12px; color:var(--text3); font-family:var(--mono); }
+
+  /* TABS */
+  .tabs { display:flex; gap:6px; margin-bottom:18px; background:var(--bg2); border-radius:10px; padding:4px; border:1px solid var(--border); }
+  .tab { flex:1; padding:7px 0; border:none; border-radius:7px; background:transparent; color:var(--text2); font-family:var(--font); font-size:13px; cursor:pointer; transition:all .2s; }
   .tab.active { background:var(--bg3); color:var(--accent); font-weight:500; box-shadow:0 0 0 1px var(--border); }
-  .grid { display:grid; grid-template-columns:300px 1fr; gap:16px; align-items:start; }
+
+  /* VIEW TOGGLE */
+  .view-toggle { display:flex; gap:8px; margin-bottom:18px; justify-content:flex-end; }
+  .vtab { padding:5px 16px; border:1px solid var(--border); border-radius:20px; background:transparent; color:var(--text3); font-family:var(--font); font-size:12px; cursor:pointer; transition:all .2s; }
+  .vtab.active { background:var(--accent); color:#0f1117; border-color:var(--accent); font-weight:600; }
+
+  /* LAYOUT */
+  .grid { display:grid; grid-template-columns:290px 1fr; gap:16px; align-items:start; }
   @media(max-width:720px){ .grid { grid-template-columns:1fr; } }
   .panel { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:16px; }
-  .panel-title { font-size:11px; font-weight:500; color:var(--text3); text-transform:uppercase; letter-spacing:.08em; margin-bottom:14px; padding-bottom:10px; border-bottom:1px solid var(--border); }
-  .slider-group { margin-bottom:14px; }
-  .slider-header { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:5px; }
-  .slider-label { font-size:13px; color:var(--text2); }
-  .slider-val { font-family:var(--mono); font-size:13px; font-weight:600; color:var(--accent); }
-  input[type=range] { -webkit-appearance:none; width:100%; height:4px; border-radius:2px; background:var(--bg3); outline:none; cursor:pointer; }
-  input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:14px; height:14px; border-radius:50%; background:var(--accent); box-shadow:0 0 8px rgba(79,195,247,.4); cursor:pointer; transition:transform .15s; }
-  input[type=range]::-webkit-slider-thumb:hover { transform:scale(1.2); }
-  .divider { border:none; border-top:1px solid var(--border); margin:14px 0; }
-  .capex-box { background:var(--bg3); border-radius:8px; padding:10px 12px; margin-bottom:14px; border:1px solid var(--border); }
-  .capex-row { display:flex; justify-content:space-between; font-size:12px; padding:3px 0; color:var(--text2); border-bottom:1px solid rgba(255,255,255,.04); }
-  .capex-row:last-child { border-bottom:none; font-weight:500; color:var(--text); padding-top:6px; margin-top:2px; }
-  .capex-row span:last-child { font-family:var(--mono); }
-  .sub-color { color:var(--green); }
-  .kpi-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:14px; }
-  @media(max-width:500px){ .kpi-grid { grid-template-columns:repeat(2,1fr); } }
-  .kpi { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:12px; }
-  .kpi-label { font-size:11px; color:var(--text3); margin-bottom:4px; line-height:1.4; }
-  .kpi-value { font-family:var(--mono); font-size:17px; font-weight:600; color:var(--text); line-height:1.2; }
-  .kpi-value.pos { color:var(--green); } .kpi-value.neg { color:var(--red); } .kpi-value.warn { color:var(--yellow); }
-  .table-wrap { overflow-x:auto; }
+  .panel-title { font-size:11px; font-weight:500; color:var(--text3); text-transform:uppercase; letter-spacing:.08em; margin-bottom:12px; padding-bottom:10px; border-bottom:1px solid var(--border); }
+
+  /* SLIDERS */
+  .sg { margin-bottom:12px; }
+  .sh { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px; }
+  .sl { font-size:12px; color:var(--text2); }
+  .sv { font-family:var(--mono); font-size:12px; font-weight:600; color:var(--accent); }
+  input[type=range] { -webkit-appearance:none; width:100%; height:3px; border-radius:2px; background:var(--bg3); outline:none; cursor:pointer; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:13px; height:13px; border-radius:50%; background:var(--accent); box-shadow:0 0 6px rgba(79,195,247,.4); cursor:pointer; }
+  .divider { border:none; border-top:1px solid var(--border); margin:12px 0; }
+
+  /* CAPEX BOX */
+  .capex-box { background:var(--bg3); border-radius:8px; padding:9px 12px; border:1px solid var(--border); margin-top:4px; }
+  .cr { display:flex; justify-content:space-between; font-size:11px; padding:2px 0; color:var(--text2); border-bottom:1px solid rgba(255,255,255,.04); }
+  .cr:last-child { border-bottom:none; font-weight:600; color:var(--text); padding-top:5px; margin-top:2px; }
+  .cr span:last-child { font-family:var(--mono); }
+
+  /* KPI */
+  .kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:12px; }
+  @media(max-width:900px){ .kpi-grid { grid-template-columns:repeat(2,1fr); } }
+  .kpi { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:10px 12px; }
+  .kpi-label { font-size:10px; color:var(--text3); margin-bottom:3px; line-height:1.4; }
+  .kpi-value { font-family:var(--mono); font-size:16px; font-weight:600; }
+  .pos { color:var(--green); } .neg { color:var(--red); } .warn { color:var(--yellow); } .pur { color:var(--purple); }
+
+  /* BEP BANNER */
+  .bep-banner { border-radius:10px; padding:12px 16px; margin-bottom:12px; display:flex; align-items:center; gap:12px; font-size:13px; }
+  .bep-banner.achieved { background:rgba(102,187,106,.1); border:1px solid rgba(102,187,106,.3); }
+  .bep-banner.not-achieved { background:rgba(239,83,80,.08); border:1px solid rgba(239,83,80,.25); }
+  .bep-icon { font-size:22px; }
+  .bep-main { font-weight:600; font-size:14px; }
+  .bep-sub { font-size:11px; color:var(--text2); margin-top:2px; }
+
+  /* CHART */
+  .chart-wrap { position:relative; width:100%; height:260px; margin-bottom:10px; }
+
+  /* TABLE */
+  .table-wrap { overflow-x:auto; margin-top:10px; }
   table { width:100%; border-collapse:collapse; font-size:12px; }
-  th { text-align:right; padding:7px 10px; color:var(--text3); font-weight:400; border-bottom:1px solid var(--border); white-space:nowrap; font-family:var(--mono); font-size:11px; }
-  th:first-child { text-align:left; }
-  td { text-align:right; padding:7px 10px; border-bottom:1px solid rgba(255,255,255,.04); font-family:var(--mono); font-size:12px; color:var(--text2); white-space:nowrap; }
-  td:first-child { text-align:left; color:var(--text); font-family:var(--font); }
-  tr.hl td { background:rgba(79,195,247,.05); color:var(--text); }
+  th { text-align:right; padding:6px 8px; color:var(--text3); font-weight:400; border-bottom:1px solid var(--border); white-space:nowrap; font-family:var(--mono); font-size:10px; }
+  th:first-child, th:nth-child(2) { text-align:left; }
+  td { text-align:right; padding:6px 8px; border-bottom:1px solid rgba(255,255,255,.04); font-family:var(--mono); font-size:11px; color:var(--text2); white-space:nowrap; }
+  td:first-child { text-align:left; color:var(--text); font-family:var(--font); font-weight:500; }
+  td:nth-child(2) { text-align:left; color:var(--text2); font-family:var(--font); }
+  tr.bep-row td { background:rgba(102,187,106,.08); }
   tr:hover td { background:rgba(255,255,255,.02); }
-  .badge { display:inline-block; font-size:10px; padding:1px 6px; border-radius:4px; margin-left:5px; font-family:var(--font); }
+  .badge { display:inline-block; font-size:10px; padding:1px 5px; border-radius:4px; margin-left:4px; font-family:var(--font); }
   .badge.pos { background:rgba(102,187,106,.15); color:var(--green); }
   .badge.neg { background:rgba(239,83,80,.12); color:var(--red); }
-  .chart-wrap { position:relative; width:100%; height:220px; margin-bottom:14px; }
+  .badge.bep { background:rgba(206,147,216,.2); color:var(--purple); }
+
+  /* LEGEND */
   .legend { display:flex; flex-wrap:wrap; gap:12px; font-size:11px; color:var(--text3); margin-top:8px; }
   .legend span { display:flex; align-items:center; gap:5px; }
-  .dot { width:9px; height:9px; border-radius:2px; }
+  .ldot { width:9px; height:9px; border-radius:2px; display:inline-block; }
+  .lline { width:18px; height:2px; display:inline-block; }
+
   .note { font-size:11px; color:var(--text3); line-height:1.8; margin-top:12px; padding-top:12px; border-top:1px solid var(--border); }
   .note strong { color:var(--text2); }
-  .be-note { font-size:12px; color:var(--accent2); margin:10px 0 4px; font-family:var(--mono); }
   .right-col > * + * { margin-top:14px; }
+
+  /* VIEW sections */
+  .view-section { display:none; }
+  .view-section.active { display:block; }
 </style>
 </head>
 <body>
+
 <header>
   <h1>⚡ 완속 <span>CPO</span> 손익분기 시뮬레이터</h1>
-  <p>국내 완속 충전 사업자 투자비 포함 손익분기점 분석 · 2025년 기준</p>
+  <p>투자비 포함 연도별 누적 손익 · BEP 달성 시점 분석 · 2025년 기준</p>
 </header>
 
 <div class="tabs">
@@ -80,99 +116,135 @@
 </div>
 
 <div class="grid">
+  <!-- LEFT PANEL -->
   <div class="panel">
-    <div class="panel-title">파라미터 설정</div>
-    <div class="slider-group">
-      <div class="slider-header"><span class="slider-label">운영 충전기 수</span><span class="slider-val" id="v-qty">1,000기</span></div>
-      <input type="range" id="qty" min="50" max="20000" step="50" value="1000" oninput="update()">
-    </div>
-    <div class="slider-group">
-      <div class="slider-header"><span class="slider-label">일 평균 이용시간</span><span class="slider-val" id="v-usage">4시간</span></div>
-      <input type="range" id="usage" min="1" max="10" step="0.5" value="4" oninput="update()">
-    </div>
-    <div class="slider-group">
-      <div class="slider-header"><span class="slider-label">판매 단가</span><span class="slider-val" id="v-price">295원/kWh</span></div>
-      <input type="range" id="price" min="200" max="400" step="5" value="295" oninput="update()">
-    </div>
-    <div class="slider-group">
-      <div class="slider-header"><span class="slider-label">전기 매입단가</span><span class="slider-val" id="v-buy">110원/kWh</span></div>
-      <input type="range" id="buy" min="80" max="180" step="5" value="110" oninput="update()">
-    </div>
-    <div class="slider-group">
-      <div class="slider-header"><span class="slider-label">본사 고정비 (월)</span><span class="slider-val" id="v-fixed">3,000만원</span></div>
-      <input type="range" id="fixed" min="500" max="15000" step="500" value="3000" oninput="update()">
-    </div>
+    <div class="panel-title">운영 파라미터</div>
+
+    <div class="sg"><div class="sh"><span class="sl">운영 충전기 수</span><span class="sv" id="v-qty">1,000기</span></div>
+      <input type="range" id="qty" min="50" max="20000" step="50" value="1000" oninput="update()"></div>
+    <div class="sg"><div class="sh"><span class="sl">일 평균 이용시간</span><span class="sv" id="v-usage">4시간</span></div>
+      <input type="range" id="usage" min="1" max="12" step="0.5" value="4" oninput="update()"></div>
+    <div class="sg"><div class="sh"><span class="sl">판매 단가</span><span class="sv" id="v-price">295원/kWh</span></div>
+      <input type="range" id="price" min="200" max="450" step="5" value="295" oninput="update()"></div>
+    <div class="sg"><div class="sh"><span class="sl">전기 매입단가</span><span class="sv" id="v-buy">110원/kWh</span></div>
+      <input type="range" id="buy" min="80" max="180" step="5" value="110" oninput="update()"></div>
+    <div class="sg"><div class="sh"><span class="sl">본사 고정비 (월)</span><span class="sv" id="v-fixed">3,000만원</span></div>
+      <input type="range" id="fixed" min="500" max="15000" step="500" value="3000" oninput="update()"></div>
+
     <hr class="divider">
     <div class="panel-title" style="margin-top:0">투자비 (CapEx) — 만원/기</div>
-    <div class="slider-group">
-      <div class="slider-header"><span class="slider-label">장비 구입가</span><span class="slider-val" id="v-equip">160만원</span></div>
-      <input type="range" id="equip" min="50" max="500" step="10" value="160" oninput="update()">
-    </div>
-    <div class="slider-group">
-      <div class="slider-header"><span class="slider-label">전기공사비</span><span class="slider-val" id="v-civil">130만원</span></div>
-      <input type="range" id="civil" min="30" max="300" step="10" value="130" oninput="update()">
-    </div>
-    <div class="slider-group">
-      <div class="slider-header"><span class="slider-label">한전불입금</span><span class="slider-val" id="v-kepco">87만원</span></div>
-      <input type="range" id="kepco" min="0" max="200" step="5" value="87" oninput="update()">
-    </div>
-    <div class="slider-group">
-      <div class="slider-header"><span class="slider-label">정부 보조금</span><span class="slider-val" id="v-sub">200만원</span></div>
-      <input type="range" id="sub" min="0" max="250" step="10" value="200" oninput="update()">
-    </div>
-    <div class="slider-group">
-      <div class="slider-header"><span class="slider-label">감가상각 내용연수</span><span class="slider-val" id="v-life">7년</span></div>
-      <input type="range" id="life" min="3" max="10" step="1" value="7" oninput="update()">
-    </div>
+
+    <div class="sg"><div class="sh"><span class="sl">장비 구입가</span><span class="sv" id="v-equip">160만원</span></div>
+      <input type="range" id="equip" min="50" max="500" step="10" value="160" oninput="update()"></div>
+    <div class="sg"><div class="sh"><span class="sl">전기공사비</span><span class="sv" id="v-civil">130만원</span></div>
+      <input type="range" id="civil" min="30" max="300" step="10" value="130" oninput="update()"></div>
+    <div class="sg"><div class="sh"><span class="sl">한전불입금</span><span class="sv" id="v-kepco">87만원</span></div>
+      <input type="range" id="kepco" min="0" max="200" step="5" value="87" oninput="update()"></div>
+    <div class="sg"><div class="sh"><span class="sl">정부 보조금</span><span class="sv" id="v-sub">200만원</span></div>
+      <input type="range" id="sub" min="0" max="250" step="10" value="200" oninput="update()"></div>
+    <div class="sg"><div class="sh"><span class="sl">감가상각 내용연수</span><span class="sv" id="v-life">7년</span></div>
+      <input type="range" id="life" min="3" max="10" step="1" value="7" oninput="update()"></div>
+
     <div class="capex-box" id="capex-box"></div>
   </div>
 
+  <!-- RIGHT COL -->
   <div class="right-col">
+
+    <!-- VIEW TOGGLE -->
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+      <div style="font-size:12px; color:var(--text3);">분석 뷰 선택</div>
+      <div class="view-toggle">
+        <button class="vtab active" onclick="setView('yearly', this)">📅 연도별 분석</button>
+        <button class="vtab" onclick="setView('scale', this)">📊 규모별 비교</button>
+      </div>
+    </div>
+
+    <!-- BEP BANNER -->
+    <div class="bep-banner" id="bep-banner">
+      <div class="bep-icon" id="bep-icon">⏳</div>
+      <div><div class="bep-main" id="bep-main">—</div><div class="bep-sub" id="bep-sub">—</div></div>
+    </div>
+
+    <!-- KPIs -->
     <div class="panel">
-      <div class="panel-title">현재 운영 규모 손익</div>
+      <div class="panel-title">월간 손익 요약 (현재 규모)</div>
       <div class="kpi-grid" id="kpis"></div>
     </div>
-    <div class="panel">
-      <div class="panel-title">운영 규모별 손익 추이</div>
-      <div class="chart-wrap"><canvas id="chart"></canvas></div>
-      <div class="legend">
-        <span><span class="dot" style="background:#66bb6a"></span>영업이익 흑자 (상각포함)</span>
-        <span><span class="dot" style="background:#ef5350"></span>영업이익 적자</span>
-        <span><span style="width:20px;height:3px;background:#ffa726;display:inline-block;border-radius:0"></span>현금흐름 (상각제외)</span>
+
+    <!-- YEARLY VIEW -->
+    <div class="view-section active" id="view-yearly">
+      <div class="panel">
+        <div class="panel-title">연도별 누적 손익 & 투자 회수 추이</div>
+        <div class="chart-wrap"><canvas id="chart-yearly"></canvas></div>
+        <div class="legend">
+          <span><span class="ldot" style="background:rgba(102,187,106,.8)"></span>연간 영업이익 (흑자)</span>
+          <span><span class="ldot" style="background:rgba(239,83,80,.75)"></span>연간 영업이익 (적자)</span>
+          <span><span class="lline" style="background:var(--accent)"></span>누적 현금흐름</span>
+          <span><span class="lline" style="background:var(--purple); border-top:2px dashed var(--purple)"></span>누적 영업이익</span>
+          <span><span style="font-size:12px">🔴</span>BEP 달성 시점</span>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">연도별 손익 상세 테이블</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>연도</th><th>구분</th><th>연 매출</th><th>전기+유지</th><th>고정비</th><th>감가상각</th><th>연 영업이익</th><th>누적 현금흐름</th><th>누적 영업이익</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-yearly"></tbody>
+          </table>
+        </div>
+        <div class="note">
+          <strong>누적 현금흐름</strong> = 총투자비(−) + 매년 현금흐름(상각제외) 누적<br>
+          <strong>누적 영업이익</strong> = 총투자비(−) + 매년 영업이익(상각포함) 누적<br>
+          BEP = 누적 현금흐름이 0을 넘는 시점 (투자원금 완전 회수)
+        </div>
       </div>
     </div>
-    <div class="panel">
-      <div class="panel-title">규모별 손익 시뮬레이션</div>
-      <div class="be-note" id="be-note"></div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>운영 대수</th><th>월 매출</th><th>전기+유지</th><th>고정비</th><th>감가상각</th><th>영업이익</th><th>이익률</th><th>회수기간</th>
-            </tr>
-          </thead>
-          <tbody id="tbody"></tbody>
-        </table>
+
+    <!-- SCALE VIEW -->
+    <div class="view-section" id="view-scale">
+      <div class="panel">
+        <div class="panel-title">운영 규모별 월 손익 비교</div>
+        <div class="chart-wrap"><canvas id="chart-scale"></canvas></div>
+        <div class="legend">
+          <span><span class="ldot" style="background:rgba(102,187,106,.8)"></span>월 영업이익 (흑자)</span>
+          <span><span class="ldot" style="background:rgba(239,83,80,.75)"></span>월 영업이익 (적자)</span>
+          <span><span class="lline" style="background:var(--yellow)"></span>월 현금흐름 (상각제외)</span>
+        </div>
       </div>
-      <div class="note">
-        <strong>데이터 근거 (2025년)</strong><br>
-        판매단가: SK일렉링크 아파트 완속 295원/kWh · 전기매입: 한전 저압 심야 가중평균 110원/kWh<br>
-        장비가: 환경부 보조금 단가 기준 160만원 · 보조금: 2025년 7kW 스마트 완속 최대 220만원<br>
-        유지보수 2.5만원/기·월, 부지수수료 1.5만원/기·월 (업계 실측) · 내용연수 7년 (국세청 기준)<br>
-        GS차지비·에버온: 4~7만기 이상 운영으로 흑자 달성 (전기신문 2025) · 채비: 850억 매출, 275억 적자 (2024)
+      <div class="panel">
+        <div class="panel-title">규모별 손익 시뮬레이션 테이블</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>운영 대수</th><th>월 매출</th><th>전기+유지</th><th>고정비</th><th>감가상각</th><th>월 영업이익</th><th>이익률</th><th>BEP 달성</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-scale"></tbody>
+          </table>
+        </div>
       </div>
+    </div>
+
+    <div class="note" style="margin-top:0">
+      <strong>데이터 근거 (2025년)</strong><br>
+      판매단가: SK일렉링크 아파트 완속 295원/kWh · 전기매입: 한전 저압 심야 가중평균 110원/kWh<br>
+      장비가: 환경부 보조금 단가 기준 160만원 · 보조금: 2025년 7kW 스마트 완속 최대 220만원<br>
+      유지보수 2.5만원/기·월, 부지수수료 1.5만원/기·월 (업계 실측) · 내용연수 7년 (국세청 기준)<br>
+      GS차지비·에버온: 4~7만기 이상 운영으로 흑자 달성 (전기신문 2025) · 채비: 850억 매출, 275억 적자 (2024)
     </div>
   </div>
 </div>
 
 <script>
-// ============================================================
-// 단위 통일: 모든 금액은 "만원" 기준으로 계산
-// p.equip, p.civil, p.kepco, p.sub, p.fixed → 만원
-// kWh 단가 → 원/kWh
-// qty → 기 (대수)
-// ============================================================
-let mode = 'apt7', chart;
+let mode = 'apt7';
+let currentView = 'yearly';
+let chartYearly = null, chartScale = null;
 
 const MODES = {
   apt7:  { kw:7,  buyRate:110, equip:160, civil:130, kepco:87,  sub:200, life:7, maint:2.5, site:1.5, usage:4,   price:295, fixed:3000 },
@@ -185,202 +257,228 @@ function setMode(m, el) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
   const c = MODES[m];
-  document.getElementById('usage').value = c.usage;
-  document.getElementById('price').value = c.price;
-  document.getElementById('buy').value   = c.buyRate;
-  document.getElementById('fixed').value = c.fixed;
-  document.getElementById('equip').value = c.equip;
-  document.getElementById('civil').value = c.civil;
-  document.getElementById('kepco').value = c.kepco;
-  document.getElementById('sub').value   = c.sub;
-  document.getElementById('life').value  = c.life;
+  ['usage','price','fixed','equip','civil','kepco','sub','life'].forEach(k => {
+    document.getElementById(k).value = c[k];
+  });
+  document.getElementById('buy').value = c.buyRate;
+  update();
+}
+
+function setView(v, el) {
+  currentView = v;
+  document.querySelectorAll('.vtab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+  document.getElementById('view-' + v).classList.add('active');
   update();
 }
 
 // 만원 단위 포맷
-function fmtM(manwon) {
-  const v = Math.round(manwon);
-  if (Math.abs(v) >= 10000) return (v / 10000).toFixed(1) + '억원';
-  return v.toLocaleString() + '만원';
+function fmtM(v) {
+  const r = Math.round(v);
+  if (Math.abs(r) >= 10000) return (r/10000).toFixed(1) + '억원';
+  return r.toLocaleString() + '만원';
 }
 
 function getP() {
   return {
     qty:   parseInt(document.getElementById('qty').value),
     usage: parseFloat(document.getElementById('usage').value),
-    price: parseInt(document.getElementById('price').value),   // 원/kWh
-    buy:   parseInt(document.getElementById('buy').value),     // 원/kWh
-    fixed: parseInt(document.getElementById('fixed').value),   // 만원/월
-    equip: parseInt(document.getElementById('equip').value),   // 만원/기
-    civil: parseInt(document.getElementById('civil').value),   // 만원/기
-    kepco: parseInt(document.getElementById('kepco').value),   // 만원/기
-    sub:   parseInt(document.getElementById('sub').value),     // 만원/기
-    life:  parseInt(document.getElementById('life').value),    // 년
+    price: parseInt(document.getElementById('price').value),
+    buy:   parseInt(document.getElementById('buy').value),
+    fixed: parseInt(document.getElementById('fixed').value),
+    equip: parseInt(document.getElementById('equip').value),
+    civil: parseInt(document.getElementById('civil').value),
+    kepco: parseInt(document.getElementById('kepco').value),
+    sub:   parseInt(document.getElementById('sub').value),
+    life:  parseInt(document.getElementById('life').value),
   };
 }
 
-function calc(qty, p) {
+// 월간 손익 계산 (단위: 만원)
+function calcMonthly(qty, p) {
   const cfg = MODES[mode];
+  const netCapPerUnit = Math.max(0, p.equip + p.civil + p.kepco - p.sub); // 만원/기
+  const depPerUnit    = netCapPerUnit / (p.life * 12);                     // 만원/기·월
+  const kwhMonth      = cfg.kw * p.usage * 30 * qty;                      // kWh/월
+  const rev    = kwhMonth * p.price / 10000;      // 만원/월
+  const elec   = kwhMonth * p.buy   / 10000;      // 만원/월
+  const maint  = (cfg.maint + cfg.site) * qty;    // 만원/월
+  const dep    = depPerUnit * qty;                 // 만원/월
+  const cf     = rev - elec - maint - p.fixed;    // 현금흐름 (상각제외)
+  const op     = cf - dep;                         // 영업이익 (상각포함)
+  const totalInv = netCapPerUnit * qty;            // 총투자비 (만원)
+  const pbYears  = cf > 0 ? totalInv / cf / 12 : -1;
+  return { rev, elec, maint, dep, cf, op, totalInv, netCapPerUnit, depPerUnit, pbYears };
+}
 
-  // 1기당 순투자비 (만원)
-  const netCapPerUnit = Math.max(0, p.equip + p.civil + p.kepco - p.sub);
-  // 1기당 월 감가상각 (만원/기·월)
-  const depPerUnit = netCapPerUnit / (p.life * 12);
+// 연도별 누적 계산 (최대 15년)
+function calcYearly(p) {
+  const m = calcMonthly(p.qty, p);
+  const years = [];
+  let cumCF = -m.totalInv;   // 초기 투자 = 마이너스로 시작
+  let cumOP = -m.totalInv;
+  let bepYear = null;
 
-  // 월 kWh 총량
-  const kwhPerMonth = cfg.kw * p.usage * 30 * qty;
-
-  // 매출 (만원/월) = kWh × 원/kWh ÷ 10000
-  const rev  = kwhPerMonth * p.price / 10000;
-  // 전기매입비 (만원/월)
-  const elec = kwhPerMonth * p.buy   / 10000;
-  // 유지보수+부지비 (만원/월)
-  const maint = (cfg.maint + cfg.site) * qty;
-  // 감가상각 (만원/월)
-  const dep  = depPerUnit * qty;
-  // 본사 고정비 (만원/월) — 이미 만원 단위
-  const fixedCost = p.fixed;
-
-  // 현금흐름 = 매출 - 전기 - 유지 - 고정비 (상각 제외)
-  const cf = rev - elec - maint - fixedCost;
-  // 영업이익 = 현금흐름 - 감가상각
-  const op = cf - dep;
-
-  // 총 투자비 (만원)
-  const totalInv = netCapPerUnit * qty;
-  // 투자 회수기간 (년) — 현금흐름 기준
-  const pb = cf > 0 ? totalInv / cf / 12 : -1;
-
-  return { rev, elec, maint, dep, fixedCost, cf, op, totalInv, netCapPerUnit, depPerUnit, pb };
+  for (let yr = 1; yr <= 15; yr++) {
+    const annCF = m.cf * 12;
+    const annOP = m.op * 12;
+    cumCF += annCF;
+    cumOP += annOP;
+    if (bepYear === null && cumCF >= 0) bepYear = yr;
+    years.push({ yr, annRev: m.rev*12, annElec: m.elec*12, annMaint: m.maint*12,
+                 annFixed: p.fixed*12, annDep: m.dep*12,
+                 annCF, annOP, cumCF, cumOP, bep: bepYear === yr });
+  }
+  return { years, bepYear, monthly: m };
 }
 
 function update() {
   const p = getP();
 
-  // 라벨 업데이트
+  // 라벨
   document.getElementById('v-qty').textContent   = p.qty.toLocaleString() + '기';
   document.getElementById('v-usage').textContent = p.usage + '시간';
   document.getElementById('v-price').textContent = p.price + '원/kWh';
-  document.getElementById('v-buy').textContent   = p.buy   + '원/kWh';
+  document.getElementById('v-buy').textContent   = p.buy + '원/kWh';
   document.getElementById('v-fixed').textContent = p.fixed.toLocaleString() + '만원';
   document.getElementById('v-equip').textContent = p.equip + '만원';
   document.getElementById('v-civil').textContent = p.civil + '만원';
   document.getElementById('v-kepco').textContent = p.kepco + '만원';
-  document.getElementById('v-sub').textContent   = p.sub   + '만원';
-  document.getElementById('v-life').textContent  = p.life  + '년';
+  document.getElementById('v-sub').textContent   = p.sub + '만원';
+  document.getElementById('v-life').textContent  = p.life + '년';
+
+  const m = calcMonthly(p.qty, p);
+  const netU = Math.max(0, p.equip + p.civil + p.kepco - p.sub);
 
   // CapEx 박스
-  const r0 = calc(1, p); // 1기 기준
-  const netU = Math.max(0, p.equip + p.civil + p.kepco - p.sub);
   document.getElementById('capex-box').innerHTML = `
-    <div class="capex-row"><span>장비 구입가</span><span>${p.equip}만원</span></div>
-    <div class="capex-row"><span>전기공사비</span><span>${p.civil}만원</span></div>
-    <div class="capex-row"><span>한전불입금</span><span>${p.kepco}만원</span></div>
-    <div class="capex-row"><span>정부 보조금</span><span class="sub-color">−${p.sub}만원</span></div>
-    <div class="capex-row"><span>기당 순투자비</span><span>${netU}만원/기</span></div>
-    <div class="capex-row"><span>기당 월 감가상각</span><span>${r0.depPerUnit.toFixed(2)}만원/기·월</span></div>
+    <div class="cr"><span>장비 구입가</span><span>${p.equip}만원</span></div>
+    <div class="cr"><span>전기공사비</span><span>${p.civil}만원</span></div>
+    <div class="cr"><span>한전불입금</span><span>${p.kepco}만원</span></div>
+    <div class="cr"><span>정부 보조금</span><span style="color:var(--green)">−${p.sub}만원</span></div>
+    <div class="cr"><span>기당 순투자비</span><span>${netU}만원/기</span></div>
+    <div class="cr"><span>총 투자비</span><span>${fmtM(m.totalInv)}</span></div>
+    <div class="cr"><span>기당 월 감가상각</span><span>${m.depPerUnit.toFixed(2)}만원</span></div>
   `;
 
-  // 현재 규모 KPI
-  const r = calc(p.qty, p);
-  const mgn = r.rev > 0 ? Math.round(r.op / r.rev * 100) : 0;
-  const pbStr = r.pb > 0 ? r.pb.toFixed(1) + '년' : '회수불가';
-  const pbClass = r.pb > 0 && r.pb <= p.life ? 'pos' : 'warn';
-
+  // KPI
+  const mgn = m.rev > 0 ? Math.round(m.op / m.rev * 100) : 0;
   document.getElementById('kpis').innerHTML = `
-    <div class="kpi"><div class="kpi-label">월 매출</div><div class="kpi-value">${fmtM(r.rev)}</div></div>
-    <div class="kpi"><div class="kpi-label">전기 매입비</div><div class="kpi-value neg">−${fmtM(r.elec)}</div></div>
-    <div class="kpi"><div class="kpi-label">유지+부지비</div><div class="kpi-value neg">−${fmtM(r.maint)}</div></div>
-    <div class="kpi"><div class="kpi-label">본사 고정비</div><div class="kpi-value neg">−${fmtM(r.fixedCost)}</div></div>
-    <div class="kpi"><div class="kpi-label">감가상각비</div><div class="kpi-value warn">−${fmtM(r.dep)}</div></div>
-    <div class="kpi"><div class="kpi-label">영업이익</div><div class="kpi-value ${r.op>=0?'pos':'neg'}">${r.op>=0?'+':''}${fmtM(r.op)}</div></div>
-    <div class="kpi"><div class="kpi-label">현금흐름 (상각제외)</div><div class="kpi-value ${r.cf>=0?'pos':'neg'}">${r.cf>=0?'+':''}${fmtM(r.cf)}</div></div>
+    <div class="kpi"><div class="kpi-label">월 매출</div><div class="kpi-value">${fmtM(m.rev)}</div></div>
+    <div class="kpi"><div class="kpi-label">전기 매입비</div><div class="kpi-value neg">−${fmtM(m.elec)}</div></div>
+    <div class="kpi"><div class="kpi-label">유지+부지비</div><div class="kpi-value neg">−${fmtM(m.maint)}</div></div>
+    <div class="kpi"><div class="kpi-label">본사 고정비</div><div class="kpi-value neg">−${fmtM(m.fixed)}</div></div>
+    <div class="kpi"><div class="kpi-label">감가상각비</div><div class="kpi-value warn">−${fmtM(m.dep)}</div></div>
+    <div class="kpi"><div class="kpi-label">월 영업이익</div><div class="kpi-value ${m.op>=0?'pos':'neg'}">${m.op>=0?'+':''}${fmtM(m.op)}</div></div>
+    <div class="kpi"><div class="kpi-label">월 현금흐름</div><div class="kpi-value ${m.cf>=0?'pos':'neg'}">${m.cf>=0?'+':''}${fmtM(m.cf)}</div></div>
     <div class="kpi"><div class="kpi-label">영업이익률</div><div class="kpi-value ${mgn>=0?'pos':'neg'}">${mgn}%</div></div>
-    <div class="kpi"><div class="kpi-label">투자 회수기간</div><div class="kpi-value ${pbClass}">${pbStr}</div></div>
   `;
 
-  // 시나리오 테이블
-  const steps = [100, 300, 500, 1000, 2000, 3000, 5000, 7000, 10000, 20000];
-  let beFound = null;
-  let rows = '';
-  steps.forEach(q => {
-    const r2 = calc(q, p);
-    const isH = q === p.qty;
-    const mgn2 = r2.rev > 0 ? Math.round(r2.op / r2.rev * 100) : 0;
-    const pb2  = r2.pb > 0 ? r2.pb.toFixed(1) + '년' : '불가';
-    const pbC  = r2.pb > 0 && r2.pb <= p.life ? 'var(--green)' : 'var(--red)';
-    const badge = r2.op >= 0
-      ? '<span class="badge pos">흑자</span>'
-      : '<span class="badge neg">적자</span>';
-    if (r2.op >= 0 && !beFound) beFound = q;
-    rows += `<tr class="${isH ? 'hl' : ''}">
-      <td>${q.toLocaleString()}기${badge}</td>
-      <td>${fmtM(r2.rev)}</td>
-      <td>−${fmtM(r2.elec + r2.maint)}</td>
-      <td>−${fmtM(r2.fixedCost)}</td>
-      <td>−${fmtM(r2.dep)}</td>
-      <td style="color:${r2.op>=0?'var(--green)':'var(--red)'}">${r2.op>=0?'+':''}${fmtM(r2.op)}</td>
-      <td style="color:${r2.op>=0?'var(--green)':'var(--red)'}">${mgn2}%</td>
-      <td style="color:${pbC}">${pb2}</td>
-    </tr>`;
-  });
-  document.getElementById('tbody').innerHTML = rows;
-  document.getElementById('be-note').textContent = beFound
-    ? `▶ 손익분기점: ${beFound.toLocaleString()}기 이상에서 월 영업이익 흑자 전환`
-    : '▶ 2만기 이상에서도 흑자 전환 어려움 — 단가 또는 이용시간을 높여보세요';
+  // BEP 배너
+  const { years, bepYear } = calcYearly(p);
+  const banner = document.getElementById('bep-banner');
+  if (bepYear) {
+    banner.className = 'bep-banner achieved';
+    document.getElementById('bep-icon').textContent = '🎯';
+    document.getElementById('bep-main').textContent = `${bepYear}년차에 BEP 달성 — 투자금 ${fmtM(m.totalInv)} 완전 회수`;
+    document.getElementById('bep-sub').textContent =
+      `누적 현금흐름 기준 | 총 투자비 ÷ 월 현금흐름(${fmtM(m.cf)}) = ${m.pbYears > 0 ? m.pbYears.toFixed(1) + '년' : '-'}`;
+  } else {
+    banner.className = 'bep-banner not-achieved';
+    document.getElementById('bep-icon').textContent = '❌';
+    document.getElementById('bep-main').textContent = '15년 이내 BEP 달성 불가';
+    document.getElementById('bep-sub').textContent = m.cf <= 0
+      ? '현금흐름이 마이너스 — 운영 규모·단가·이용률을 높여야 합니다'
+      : `월 현금흐름 ${fmtM(m.cf)} → 회수에 ${m.pbYears.toFixed(1)}년 필요`;
+  }
 
+  if (currentView === 'yearly') renderYearly(p, years, m);
+  else renderScale(p);
+}
+
+function renderYearly(p, years, m) {
   // 차트
-  const profits   = steps.map(q => Math.round(calc(q, p).op));
-  const cashflows = steps.map(q => Math.round(calc(q, p).cf));
-  if (chart) chart.destroy();
-  chart = new Chart(document.getElementById('chart'), {
+  const labels  = years.map(y => y.yr + '년차');
+  const annOPs  = years.map(y => Math.round(y.annOP));
+  const cumCFs  = years.map(y => Math.round(y.cumCF));
+  const cumOPs  = years.map(y => Math.round(y.cumOP));
+
+  // BEP 수직선 annotation 위치
+  const bepIdx = years.findIndex(y => y.bep);
+
+  if (chartYearly) chartYearly.destroy();
+  chartYearly = new Chart(document.getElementById('chart-yearly'), {
     type: 'bar',
     data: {
-      labels: steps.map(q => q >= 10000 ? (q/10000).toFixed(0)+'만기' : q.toLocaleString()+'기'),
+      labels,
       datasets: [
         {
-          label: '영업이익',
-          data: profits,
-          backgroundColor: profits.map(v => v >= 0 ? 'rgba(102,187,106,.8)' : 'rgba(239,83,80,.75)'),
+          label: '연 영업이익',
+          data: annOPs,
+          backgroundColor: annOPs.map(v => v >= 0 ? 'rgba(102,187,106,.75)' : 'rgba(239,83,80,.7)'),
           borderRadius: 4,
-          order: 1,
+          order: 3,
+          yAxisID: 'y',
         },
         {
-          label: '현금흐름',
-          data: cashflows,
+          label: '누적 현금흐름',
+          data: cumCFs,
           type: 'line',
-          borderColor: '#ffa726',
-          backgroundColor: 'transparent',
-          pointRadius: 3,
-          pointBackgroundColor: '#ffa726',
+          borderColor: 'rgba(79,195,247,1)',
+          backgroundColor: 'rgba(79,195,247,.08)',
+          fill: true,
+          pointRadius: cumCFs.map((_, i) => years[i].bep ? 8 : 3),
+          pointBackgroundColor: cumCFs.map((_, i) => years[i].bep ? '#ff5252' : 'rgba(79,195,247,1)'),
+          pointBorderColor:    cumCFs.map((_, i) => years[i].bep ? '#fff' : 'rgba(79,195,247,1)'),
+          pointBorderWidth:    cumCFs.map((_, i) => years[i].bep ? 2 : 0),
           borderWidth: 2,
-          borderDash: [4, 3],
-          order: 0,
+          order: 1,
+          yAxisID: 'y',
+          tension: 0.3,
+        },
+        {
+          label: '누적 영업이익',
+          data: cumOPs,
+          type: 'line',
+          borderColor: 'rgba(206,147,216,0.8)',
+          backgroundColor: 'transparent',
+          pointRadius: 2,
+          borderWidth: 2,
+          borderDash: [5, 4],
+          order: 2,
+          yAxisID: 'y',
+          tension: 0.3,
         }
       ]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
       plugins: {
         legend: { display: false },
         tooltip: {
           callbacks: {
-            label: ctx => (ctx.raw >= 0 ? '+' : '') + Math.round(ctx.raw).toLocaleString() + '만원'
+            label: ctx => {
+              const v = Math.round(ctx.raw);
+              return ctx.dataset.label + ': ' + (v>=0?'+':'') + v.toLocaleString() + '만원';
+            },
+            afterBody: (items) => {
+              const yr = years[items[0].dataIndex];
+              return yr.bep ? ['', '🎯 이 시점에 BEP 달성!'] : [];
+            }
           }
         }
       },
       scales: {
-        x: {
-          ticks: { color:'#5a6490', font:{size:10}, maxRotation:45 },
-          grid:  { color:'rgba(255,255,255,.04)' }
-        },
+        x: { ticks:{ color:'#5a6490', font:{size:10} }, grid:{ color:'rgba(255,255,255,.04)' } },
         y: {
-          ticks: {
-            color: '#5a6490', font: {size:10},
+          ticks:{
+            color:'#5a6490', font:{size:10},
             callback: v => {
-              if (Math.abs(v) >= 10000) return (v/10000).toFixed(0) + '억';
-              return v.toLocaleString() + '만';
+              if (Math.abs(v) >= 10000) return (v/10000).toFixed(0)+'억';
+              return v.toLocaleString()+'만';
             }
           },
           grid: { color:'rgba(255,255,255,.06)' }
@@ -388,6 +486,95 @@ function update() {
       }
     }
   });
+
+  // 연도별 테이블
+  let rows = '';
+  years.forEach(y => {
+    const isBep = y.bep;
+    const badge = isBep ? '<span class="badge bep">🎯 BEP</span>' : '';
+    const status = y.annOP >= 0 ? '<span class="badge pos">흑자</span>' : '<span class="badge neg">적자</span>';
+    rows += `<tr class="${isBep ? 'bep-row' : ''}">
+      <td>${y.yr}년차${badge}</td>
+      <td>${status}</td>
+      <td>${fmtM(y.annRev)}</td>
+      <td>−${fmtM(y.annElec + y.annMaint)}</td>
+      <td>−${fmtM(y.annFixed)}</td>
+      <td>−${fmtM(y.annDep)}</td>
+      <td style="color:${y.annOP>=0?'var(--green)':'var(--red)'}">${y.annOP>=0?'+':''}${fmtM(y.annOP)}</td>
+      <td style="color:${y.cumCF>=0?'var(--green)':'var(--red)'}">${y.cumCF>=0?'+':''}${fmtM(y.cumCF)}</td>
+      <td style="color:${y.cumOP>=0?'var(--green)':'var(--red)'}">${y.cumOP>=0?'+':''}${fmtM(y.cumOP)}</td>
+    </tr>`;
+  });
+  document.getElementById('tbody-yearly').innerHTML = rows;
+}
+
+function renderScale(p) {
+  const steps = [100, 300, 500, 1000, 2000, 3000, 5000, 7000, 10000, 20000];
+  const profits   = steps.map(q => Math.round(calcMonthly(q, p).op));
+  const cashflows = steps.map(q => Math.round(calcMonthly(q, p).cf));
+
+  if (chartScale) chartScale.destroy();
+  chartScale = new Chart(document.getElementById('chart-scale'), {
+    type: 'bar',
+    data: {
+      labels: steps.map(q => q >= 10000 ? (q/10000).toFixed(0)+'만기' : q.toLocaleString()+'기'),
+      datasets: [
+        {
+          label: '월 영업이익',
+          data: profits,
+          backgroundColor: profits.map(v => v >= 0 ? 'rgba(102,187,106,.8)' : 'rgba(239,83,80,.75)'),
+          borderRadius: 4,
+          order: 1,
+        },
+        {
+          label: '월 현금흐름',
+          data: cashflows,
+          type: 'line',
+          borderColor: '#ffa726',
+          backgroundColor: 'transparent',
+          pointRadius: 3,
+          pointBackgroundColor: '#ffa726',
+          borderWidth: 2,
+          borderDash: [4,3],
+          order: 0,
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend:{ display:false },
+        tooltip:{ callbacks:{ label: ctx => (ctx.raw>=0?'+':'')+Math.round(ctx.raw).toLocaleString()+'만원' } }
+      },
+      scales: {
+        x:{ ticks:{ color:'#5a6490', font:{size:10}, maxRotation:45 }, grid:{ color:'rgba(255,255,255,.04)' } },
+        y:{ ticks:{ color:'#5a6490', font:{size:10}, callback: v => Math.abs(v)>=10000?(v/10000).toFixed(0)+'억':v.toLocaleString()+'만' }, grid:{ color:'rgba(255,255,255,.06)' } }
+      }
+    }
+  });
+
+  // 규모별 테이블
+  let rows = '';
+  steps.forEach(q => {
+    const r = calcMonthly(q, p);
+    const { bepYear } = calcYearly({ ...p, qty: q });
+    const isH = q === p.qty;
+    const mgn2 = r.rev > 0 ? Math.round(r.op / r.rev * 100) : 0;
+    const bepStr = bepYear ? bepYear + '년차' : '15년↑';
+    const bepC   = bepYear && bepYear <= p.life ? 'var(--green)' : 'var(--red)';
+    const badge  = r.op >= 0 ? '<span class="badge pos">흑자</span>' : '<span class="badge neg">적자</span>';
+    rows += `<tr style="${isH ? 'background:rgba(79,195,247,.05)' : ''}">
+      <td>${q.toLocaleString()}기${badge}</td>
+      <td>${fmtM(r.rev)}</td>
+      <td>−${fmtM(r.elec + r.maint)}</td>
+      <td>−${fmtM(r.fixed || p.fixed)}</td>
+      <td>−${fmtM(r.dep)}</td>
+      <td style="color:${r.op>=0?'var(--green)':'var(--red)'}">${r.op>=0?'+':''}${fmtM(r.op)}</td>
+      <td style="color:${r.op>=0?'var(--green)':'var(--red)'}">${mgn2}%</td>
+      <td style="color:${bepC};font-weight:600">${bepStr}</td>
+    </tr>`;
+  });
+  document.getElementById('tbody-scale').innerHTML = rows;
 }
 
 update();
