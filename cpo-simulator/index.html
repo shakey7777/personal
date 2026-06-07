@@ -1320,12 +1320,11 @@ function initCostChart() {
 }
 
 // ==================== 저장 / 불러오기 ====================
-async function saveSettings() {
+function saveSettings() {
   const btn = document.getElementById('btn-save');
   const status = document.getElementById('save-status');
-  
+
   const data = {
-    // BEP 파라미터
     deviceCost: document.getElementById('s-device-cost').value,
     elecCost:   document.getElementById('s-elec-cost').value,
     subsidy:    document.getElementById('s-subsidy').value,
@@ -1336,7 +1335,6 @@ async function saveSettings() {
     price:      document.getElementById('s-price').value,
     buyPrice:   document.getElementById('s-buy-price').value,
     hours:      document.getElementById('s-hours').value,
-    // 5개년 설치 계획
     y1: document.getElementById('y1').value,
     y2: document.getElementById('y2').value,
     y3: document.getElementById('y3').value,
@@ -1349,43 +1347,38 @@ async function saveSettings() {
   btn.style.opacity = '0.7';
 
   try {
-    const result = await window.storage.set('cpo-simulator-settings', JSON.stringify(data));
-    if (result) {
-      btn.textContent = '💾 설정 저장';
-      btn.style.opacity = '1';
-      status.textContent = `✓ ${data.savedAt} 저장됨`;
-      status.style.color = '#10b981';
-      setTimeout(() => { status.textContent = ''; }, 4000);
-    } else {
-      throw new Error('저장 실패');
-    }
+    localStorage.setItem('cpo-simulator-settings', JSON.stringify(data));
+    btn.textContent = '💾 설정 저장';
+    btn.style.opacity = '1';
+    status.textContent = `✓ ${data.savedAt} 저장됨`;
+    status.style.color = '#10b981';
+    setTimeout(() => { status.textContent = `마지막 저장: ${data.savedAt}`; status.style.color = '#64748b'; }, 3000);
   } catch(e) {
     btn.textContent = '💾 설정 저장';
     btn.style.opacity = '1';
-    status.textContent = '⚠ 저장 오류';
+    status.textContent = '⚠ 저장 오류 (브라우저 저장소 확인 필요)';
     status.style.color = '#ef4444';
   }
 }
 
-async function loadSettings() {
+function loadSettings() {
   try {
-    const result = await window.storage.get('cpo-simulator-settings');
-    if (!result) return;
-    const data = JSON.parse(result.value);
+    const raw = localStorage.getItem('cpo-simulator-settings');
+    if (!raw) return;
+    const data = JSON.parse(raw);
 
-    // BEP 슬라이더 복원
     const fields = ['deviceCost','elecCost','subsidy','maint','rent','platform','labor','price','buyPrice','hours'];
-    const ids =    ['s-device-cost','s-elec-cost','s-subsidy','s-maint','s-rent','s-platform','s-labor','s-price','s-buy-price','s-hours'];
+    const ids    = ['s-device-cost','s-elec-cost','s-subsidy','s-maint','s-rent','s-platform','s-labor','s-price','s-buy-price','s-hours'];
     fields.forEach((f, i) => {
-      if (data[f] !== undefined) document.getElementById(ids[i]).value = data[f];
+      const el = document.getElementById(ids[i]);
+      if (el && data[f] !== undefined) el.value = data[f];
     });
 
-    // 5개년 복원
     ['y1','y2','y3','y4','y5'].forEach(k => {
-      if (data[k] !== undefined) document.getElementById(k).value = data[k];
+      const el = document.getElementById(k);
+      if (el && data[k] !== undefined) el.value = data[k];
     });
 
-    // 저장 일시 표시
     if (data.savedAt) {
       const status = document.getElementById('save-status');
       status.textContent = `마지막 저장: ${data.savedAt}`;
@@ -1397,7 +1390,7 @@ async function loadSettings() {
 }
 
 // ==================== 초기화 ====================
-loadSettings().then(() => update());
+loadSettings(); update();
 </script>
 </body>
 </html>
