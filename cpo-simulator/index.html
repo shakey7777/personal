@@ -130,6 +130,9 @@
       <input type="range" id="buy" min="80" max="180" step="5" value="110" oninput="update()"></div>
     <div class="sg"><div class="sh"><span class="sl">본사 고정비 (월)</span><span class="sv" id="v-fixed">3,000만원</span></div>
       <input type="range" id="fixed" min="500" max="15000" step="500" value="3000" oninput="update()"></div>
+    <div class="sg"><div class="sh"><span class="sl">운영 인건비</span><span class="sv" id="v-labor">1.25만원/기·월</span></div>
+      <input type="range" id="labor" min="0" max="5" step="0.25" value="1.25" oninput="update()">
+      <div style="font-size:10px;color:var(--text3);margin-top:2px;">점검·A/S·관제 인력 대당 배부 (외부자료 기준 1.25만원)</div></div>
 
     <hr class="divider">
     <div class="panel-title" style="margin-top:0">투자비 (CapEx) — 만원/기</div>
@@ -191,7 +194,7 @@
           <table>
             <thead>
               <tr>
-                <th>연도</th><th>구분</th><th>연 매출</th><th>전기+유지</th><th>고정비</th><th>감가상각</th><th>연 영업이익</th><th>누적 현금흐름</th><th>누적 영업이익</th>
+                <th>연도</th><th>구분</th><th>연 매출</th><th>전기비</th><th>유지+부지</th><th>운영인건비</th><th>고정비</th><th>감가상각</th><th>연 영업이익</th><th>누적 현금흐름</th><th>누적 영업이익</th>
               </tr>
             </thead>
             <tbody id="tbody-yearly"></tbody>
@@ -235,7 +238,7 @@
       <strong>데이터 근거 (2025년)</strong><br>
       판매단가: SK일렉링크 아파트 완속 295원/kWh · 전기매입: 한전 저압 심야 가중평균 110원/kWh<br>
       장비가: 환경부 보조금 단가 기준 160만원 · 보조금: 2025년 7kW 스마트 완속 최대 220만원<br>
-      유지보수 2.5만원/기·월, 부지수수료 1.5만원/기·월 (업계 실측) · 내용연수 7년 (국세청 기준)<br>
+      유지보수 2.5만원/기·월, 부지수수료 1.5만원/기·월 (업계 실측) · 운영 인건비 1.25만원/기·월 (점검·A/S·관제 인력 대당 배부, 외부자료 기준) · 내용연수 7년 (국세청 기준)<br>
       GS차지비·에버온: 4~7만기 이상 운영으로 흑자 달성 (전기신문 2025) · 채비: 850억 매출, 275억 적자 (2024)
     </div>
   </div>
@@ -292,6 +295,7 @@ function getP() {
     kepco: parseInt(document.getElementById('kepco').value),
     sub:   parseInt(document.getElementById('sub').value),
     life:  parseInt(document.getElementById('life').value),
+    labor: parseFloat(document.getElementById('labor').value),
   };
 }
 
@@ -301,15 +305,16 @@ function calcMonthly(qty, p) {
   const netCapPerUnit = Math.max(0, p.equip + p.civil + p.kepco - p.sub); // 만원/기
   const depPerUnit    = netCapPerUnit / (p.life * 12);                     // 만원/기·월
   const kwhMonth      = cfg.kw * p.usage * 30 * qty;                      // kWh/월
-  const rev    = kwhMonth * p.price / 10000;      // 만원/월
-  const elec   = kwhMonth * p.buy   / 10000;      // 만원/월
-  const maint  = (cfg.maint + cfg.site) * qty;    // 만원/월
-  const dep    = depPerUnit * qty;                 // 만원/월
-  const cf     = rev - elec - maint - p.fixed;    // 현금흐름 (상각제외)
-  const op     = cf - dep;                         // 영업이익 (상각포함)
-  const totalInv = netCapPerUnit * qty;            // 총투자비 (만원)
+  const rev    = kwhMonth * p.price / 10000;                    // 만원/월
+  const elec   = kwhMonth * p.buy   / 10000;                    // 만원/월
+  const labor  = p.labor * qty;                                 // 만원/월 (운영 인건비)
+  const maint  = (cfg.maint + cfg.site) * qty + labor;         // 만원/월 (유지+부지+인건비)
+  const dep    = depPerUnit * qty;                               // 만원/월
+  const cf     = rev - elec - maint - p.fixed;                  // 현금흐름 (상각제외)
+  const op     = cf - dep;                                       // 영업이익 (상각포함)
+  const totalInv = netCapPerUnit * qty;                          // 총투자비 (만원)
   const pbYears  = cf > 0 ? totalInv / cf / 12 : -1;
-  return { rev, elec, maint, dep, cf, op, totalInv, netCapPerUnit, depPerUnit, pbYears };
+  return { rev, elec, labor, maint, dep, cf, op, totalInv, netCapPerUnit, depPerUnit, pbYears };
 }
 
 // 연도별 누적 계산 (최대 15년)
@@ -326,7 +331,7 @@ function calcYearly(p) {
     cumCF += annCF;
     cumOP += annOP;
     if (bepYear === null && cumCF >= 0) bepYear = yr;
-    years.push({ yr, annRev: m.rev*12, annElec: m.elec*12, annMaint: m.maint*12,
+    years.push({ yr, annRev: m.rev*12, annElec: m.elec*12, annMaint: m.maint*12, annLabor: m.labor*12,
                  annFixed: p.fixed*12, annDep: m.dep*12,
                  annCF, annOP, cumCF, cumOP, bep: bepYear === yr });
   }
@@ -342,6 +347,7 @@ function update() {
   document.getElementById('v-price').textContent = p.price + '원/kWh';
   document.getElementById('v-buy').textContent   = p.buy + '원/kWh';
   document.getElementById('v-fixed').textContent = p.fixed.toLocaleString() + '만원';
+  document.getElementById('v-labor').textContent = p.labor + '만원/기·월';
   document.getElementById('v-equip').textContent = p.equip + '만원';
   document.getElementById('v-civil').textContent = p.civil + '만원';
   document.getElementById('v-kepco').textContent = p.kepco + '만원';
@@ -364,10 +370,12 @@ function update() {
 
   // KPI
   const mgn = m.rev > 0 ? Math.round(m.op / m.rev * 100) : 0;
+  const maintOnly = m.maint - m.labor;  // 유지+부지비만 (인건비 제외)
   document.getElementById('kpis').innerHTML = `
     <div class="kpi"><div class="kpi-label">월 매출</div><div class="kpi-value">${fmtM(m.rev)}</div></div>
     <div class="kpi"><div class="kpi-label">전기 매입비</div><div class="kpi-value neg">−${fmtM(m.elec)}</div></div>
-    <div class="kpi"><div class="kpi-label">유지+부지비</div><div class="kpi-value neg">−${fmtM(m.maint)}</div></div>
+    <div class="kpi"><div class="kpi-label">유지+부지비</div><div class="kpi-value neg">−${fmtM(maintOnly)}</div></div>
+    <div class="kpi"><div class="kpi-label">운영 인건비</div><div class="kpi-value neg">−${fmtM(m.labor)}</div></div>
     <div class="kpi"><div class="kpi-label">본사 고정비</div><div class="kpi-value neg">−${fmtM(m.fixed)}</div></div>
     <div class="kpi"><div class="kpi-label">감가상각비</div><div class="kpi-value warn">−${fmtM(m.dep)}</div></div>
     <div class="kpi"><div class="kpi-label">월 영업이익</div><div class="kpi-value ${m.op>=0?'pos':'neg'}">${m.op>=0?'+':''}${fmtM(m.op)}</div></div>
@@ -497,7 +505,9 @@ function renderYearly(p, years, m) {
       <td>${y.yr}년차${badge}</td>
       <td>${status}</td>
       <td>${fmtM(y.annRev)}</td>
-      <td>−${fmtM(y.annElec + y.annMaint)}</td>
+      <td>−${fmtM(y.annElec)}</td>
+      <td>−${fmtM(y.annMaint - y.annLabor)}</td>
+      <td>−${fmtM(y.annLabor)}</td>
       <td>−${fmtM(y.annFixed)}</td>
       <td>−${fmtM(y.annDep)}</td>
       <td style="color:${y.annOP>=0?'var(--green)':'var(--red)'}">${y.annOP>=0?'+':''}${fmtM(y.annOP)}</td>
