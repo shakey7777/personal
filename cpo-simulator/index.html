@@ -3,821 +3,321 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>바이온에버 CPO 손익분기점 시뮬레이터</title>
+<title>바이온에버 CPO 통합 수익 시뮬레이터</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;500;600;700&display=swap');
-  
   :root {
-    --bg: #0a0e1a;
-    --bg2: #111827;
-    --card: #161d2e;
-    --card2: #1e2a40;
-    --border: #253048;
-    --accent: #3b82f6;
-    --accent2: #22d3ee;
-    --accent3: #f59e0b;
-    --green: #10b981;
-    --red: #ef4444;
-    --text: #e2e8f0;
-    --text2: #94a3b8;
-    --text3: #64748b;
+    --bg:#0a0e1a;--bg2:#111827;--card:#161d2e;--card2:#1e2a40;
+    --border:#253048;--accent:#3b82f6;--accent2:#22d3ee;--accent3:#f59e0b;
+    --green:#10b981;--red:#ef4444;--purple:#8b5cf6;
+    --text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
   }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Pretendard',-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  
-  body {
-    font-family: 'Pretendard', -apple-system, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    font-size: 14px;
-  }
+  /* HEADER */
+  .header{background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 50%,#0f172a 100%);border-bottom:1px solid var(--border);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;}
+  .header-title{font-size:20px;font-weight:700;background:linear-gradient(90deg,var(--accent2),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .header-sub{font-size:12px;color:var(--text2);margin-top:2px;}
+  .header-right{display:flex;align-items:center;gap:10px;}
 
-  /* Header */
-  .header {
-    background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%);
-    border-bottom: 1px solid var(--border);
-    padding: 20px 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .header-title {
-    font-size: 20px;
-    font-weight: 700;
-    background: linear-gradient(90deg, var(--accent2), var(--accent));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-  .header-sub { font-size: 12px; color: var(--text2); margin-top: 2px; }
-  .header-badge {
-    background: rgba(59,130,246,0.15);
-    border: 1px solid rgba(59,130,246,0.3);
-    color: var(--accent2);
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-  }
+  /* LAYOUT */
+  .container{max-width:1600px;margin:0 auto;padding:24px;}
 
-  /* Layout */
-  .container { max-width: 1600px; margin: 0 auto; padding: 24px; }
-  
-  /* Tabs */
-  .tabs {
-    display: flex;
-    gap: 4px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 6px;
-    margin-bottom: 24px;
-    width: fit-content;
-  }
-  .tab {
-    padding: 8px 20px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text2);
-    transition: all 0.2s;
-    border: none;
-    background: transparent;
-  }
-  .tab.active {
-    background: var(--accent);
-    color: white;
-    font-weight: 600;
-  }
-  .tab:hover:not(.active) { background: var(--card2); color: var(--text); }
+  /* TABS */
+  .tabs{display:flex;gap:4px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:6px;margin-bottom:24px;width:fit-content;flex-wrap:wrap;}
+  .tab{padding:8px 20px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text2);transition:all .2s;border:none;background:transparent;font-family:inherit;}
+  .tab.active{background:var(--accent);color:#fff;font-weight:600;}
+  .tab:hover:not(.active){background:var(--card2);color:var(--text);}
+  .panel{display:none;}.panel.active{display:block;}
 
-  /* Panels */
-  .panel { display: none; }
-  .panel.active { display: block; }
+  /* INNER TABS */
+  .inner-tabs{display:flex;gap:4px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:5px;margin-bottom:18px;width:fit-content;flex-wrap:wrap;}
+  .inner-tab{padding:7px 18px;border-radius:7px;cursor:pointer;font-size:12px;font-weight:500;color:var(--text2);transition:all .2s;border:none;background:transparent;font-family:inherit;}
+  .inner-tab.active{background:var(--card2);color:var(--text);font-weight:600;border:1px solid var(--border);}
+  .inner-tab:hover:not(.active){color:var(--text);}
+  .inner-panel{display:none;}.inner-panel.active{display:block;}
 
-  /* Grid */
-  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
-  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 20px; }
-  .grid-main { display: grid; grid-template-columns: 340px 1fr; gap: 20px; }
-  .grid-full { grid-column: 1 / -1; }
+  /* CARD */
+  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;}
+  .card-title{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+  .card-title::before{content:'';width:3px;height:12px;background:var(--accent);border-radius:2px;}
 
-  /* 통합 레이아웃: 공통 사이드바 + 우측 탭콘텐츠 */
-  .layout-wrap { display: grid; grid-template-columns: 340px 1fr; gap: 20px; align-items: start; }
-  .sidebar { position: sticky; top: 16px; }
-  .inner-tabs {
-    display: flex; gap: 4px;
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 10px; padding: 5px; margin-bottom: 18px; width: fit-content;
-  }
-  .inner-tab {
-    padding: 7px 18px; border-radius: 7px; cursor: pointer;
-    font-size: 12px; font-weight: 500; color: var(--text2);
-    transition: all 0.2s; border: none; background: transparent;
-  }
-  .inner-tab.active { background: var(--card2); color: var(--text); font-weight: 600; border: 1px solid var(--border); }
-  .inner-tab:hover:not(.active) { color: var(--text); }
-  .inner-panel { display: none; }
-  .inner-panel.active { display: block; }
+  /* KPI CARDS */
+  .kpi-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 20px;position:relative;overflow:hidden;}
+  .kpi-card::after{content:'';position:absolute;top:0;left:0;width:100%;height:2px;}
+  .kpi-card.blue::after{background:var(--accent);}
+  .kpi-card.cyan::after{background:var(--accent2);}
+  .kpi-card.amber::after{background:var(--accent3);}
+  .kpi-card.green::after{background:var(--green);}
+  .kpi-card.red::after{background:var(--red);}
+  .kpi-card.purple::after{background:var(--purple);}
+  .kpi-label{font-size:11px;color:var(--text2);font-weight:500;margin-bottom:6px;}
+  .kpi-value{font-size:24px;font-weight:700;line-height:1;}
+  .kpi-sub{font-size:11px;color:var(--text3);margin-top:4px;}
+  .kpi-card.blue .kpi-value{color:var(--accent);}
+  .kpi-card.cyan .kpi-value{color:var(--accent2);}
+  .kpi-card.amber .kpi-value{color:var(--accent3);}
+  .kpi-card.green .kpi-value{color:var(--green);}
+  .kpi-card.red .kpi-value{color:var(--red);}
+  .kpi-card.purple .kpi-value{color:var(--purple);}
 
-  /* Cards */
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
-  }
-  .card-title {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text2);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: 16px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .card-title::before {
-    content: '';
-    width: 3px;
-    height: 12px;
-    background: var(--accent);
-    border-radius: 2px;
-  }
+  /* GRIDS */
+  .grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:20px;}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px;}
+  .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px;}
+  .grid-auto{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;margin-bottom:20px;}
+  .mb-16{margin-bottom:16px;}.mb-20{margin-bottom:20px;}
 
-  /* KPI Cards */
-  .kpi-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 16px 20px;
-    position: relative;
-    overflow: hidden;
-  }
-  .kpi-card::after {
-    content: '';
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 2px;
-  }
-  .kpi-card.blue::after { background: var(--accent); }
-  .kpi-card.cyan::after { background: var(--accent2); }
-  .kpi-card.amber::after { background: var(--accent3); }
-  .kpi-card.green::after { background: var(--green); }
-  .kpi-card.red::after { background: var(--red); }
-  .kpi-label { font-size: 11px; color: var(--text2); font-weight: 500; margin-bottom: 6px; }
-  .kpi-value { font-size: 24px; font-weight: 700; line-height: 1; }
-  .kpi-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
-  .kpi-card.blue .kpi-value { color: var(--accent); }
-  .kpi-card.cyan .kpi-value { color: var(--accent2); }
-  .kpi-card.amber .kpi-value { color: var(--accent3); }
-  .kpi-card.green .kpi-value { color: var(--green); }
-  .kpi-card.red .kpi-value { color: var(--red); }
+  /* ITEM CARDS (models / channels) */
+  .item-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;transition:border-color .2s;}
+  .item-card:hover{border-color:var(--accent);}
+  .item-card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;}
+  .item-card-name{font-size:15px;font-weight:700;color:var(--text);}
+  .item-card-sub{font-size:11px;color:var(--text3);margin-top:2px;}
+  .item-card-actions{display:flex;gap:6px;flex-shrink:0;}
+  .btn-icon{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:var(--card2);color:var(--text2);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+  .btn-icon:hover{border-color:var(--accent);color:var(--accent);}
+  .btn-icon.danger:hover{border-color:var(--red);color:var(--red);}
 
-  /* Slider controls */
-  .control-group { margin-bottom: 14px; }
-  .control-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 6px;
-  }
-  .control-label { font-size: 12px; color: var(--text2); font-weight: 500; }
-  .control-value {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--accent2);
-    min-width: 80px;
-    text-align: right;
-  }
-  input[type=range] {
-    width: 100%;
-    height: 4px;
-    appearance: none;
-    background: var(--border);
-    border-radius: 2px;
-    outline: none;
-    cursor: pointer;
-  }
-  input[type=range]::-webkit-slider-thumb {
-    appearance: none;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: var(--accent);
-    border: 2px solid var(--bg);
-    cursor: pointer;
-    transition: transform 0.15s;
-  }
-  input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.3); }
-  input[type=number] {
-    background: var(--card2);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-size: 13px;
-    width: 100px;
-    text-align: right;
-    font-family: inherit;
-  }
-  input[type=number]:focus { outline: 1px solid var(--accent); border-color: var(--accent); }
+  .item-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
+  .metric-item{background:var(--card2);border-radius:8px;padding:10px 12px;}
+  .metric-label{font-size:10px;color:var(--text3);margin-bottom:4px;}
+  .metric-value{font-size:13px;font-weight:700;}
+  .metric-value.cyan{color:var(--accent2);}
+  .metric-value.green{color:var(--green);}
+  .metric-value.red{color:var(--red);}
+  .metric-value.amber{color:var(--accent3);}
+  .metric-value.blue{color:var(--accent);}
+  .metric-value.neutral{color:var(--text);}
 
-  /* Divider */
-  .divider { height: 1px; background: var(--border); margin: 14px 0; }
+  /* BADGES */
+  .badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:5px;font-size:10px;font-weight:700;letter-spacing:.02em;}
+  .badge-blue{background:rgba(59,130,246,.15);color:var(--accent);border:1px solid rgba(59,130,246,.2);}
+  .badge-cyan{background:rgba(34,211,238,.1);color:var(--accent2);border:1px solid rgba(34,211,238,.2);}
+  .badge-green{background:rgba(16,185,129,.1);color:var(--green);border:1px solid rgba(16,185,129,.2);}
+  .badge-amber{background:rgba(245,158,11,.1);color:var(--accent3);border:1px solid rgba(245,158,11,.2);}
+  .badge-red{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.2);}
+  .badge-purple{background:rgba(139,92,246,.1);color:var(--purple);border:1px solid rgba(139,92,246,.2);}
+  .badge-gray{background:rgba(100,116,139,.1);color:var(--text2);border:1px solid rgba(100,116,139,.2);}
 
-  /* Cost breakdown table */
-  .cost-table { width: 100%; border-collapse: collapse; }
-  .cost-table th {
-    text-align: left;
-    font-size: 11px;
-    color: var(--text3);
-    font-weight: 600;
-    padding: 0 0 8px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-  .cost-table th:last-child { text-align: right; }
-  .cost-table td {
-    padding: 5px 0;
-    font-size: 12px;
-    color: var(--text2);
-    border-bottom: 1px solid rgba(37,48,72,0.4);
-  }
-  .cost-table td:last-child { text-align: right; font-weight: 600; color: var(--text); }
-  .cost-table tr.total td {
-    border-top: 1px solid var(--border);
-    border-bottom: none;
-    padding-top: 10px;
-    font-weight: 700;
-    color: var(--accent2);
-    font-size: 14px;
-  }
-  .cost-table tr.subtotal td {
-    color: var(--text);
-    font-weight: 600;
-    font-size: 12px;
-  }
-  .badge-small {
-    font-size: 10px;
-    padding: 2px 6px;
-    border-radius: 4px;
-    margin-left: 4px;
-    background: rgba(59,130,246,0.15);
-    color: var(--accent);
-    font-weight: 600;
-  }
+  /* BUTTONS */
+  .btn-primary{background:var(--accent);color:#fff;border:none;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;display:inline-flex;align-items:center;gap:6px;}
+  .btn-primary:hover{background:#2563eb;}
+  .btn-outline{background:transparent;color:var(--text2);border:1px solid var(--border);padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;display:inline-flex;align-items:center;gap:6px;}
+  .btn-outline:hover{border-color:var(--accent);color:var(--accent);}
+  .btn-danger{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.3);padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;}
+  .btn-danger:hover{background:rgba(239,68,68,.2);}
+  .btn-green{background:rgba(16,185,129,.15);color:var(--green);border:1px solid rgba(16,185,129,.4);padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;}
+  .btn-green:hover{background:rgba(16,185,129,.25);}
 
-  /* BEP marker */
-  .bep-banner {
-    background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(16,185,129,0.05));
-    border: 1px solid rgba(16,185,129,0.3);
-    border-radius: 10px;
-    padding: 14px 18px;
-    margin-bottom: 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .bep-banner.loss {
-    background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(239,68,68,0.05));
-    border-color: rgba(239,68,68,0.3);
-  }
-  .bep-text { font-size: 13px; color: var(--text); font-weight: 600; }
-  .bep-sub { font-size: 11px; color: var(--text2); margin-top: 2px; }
-  .bep-value { font-size: 22px; font-weight: 800; }
-  .bep-banner .bep-value { color: var(--green); }
-  .bep-banner.loss .bep-value { color: var(--red); }
+  .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+  .section-title{font-size:15px;font-weight:700;color:var(--text);}
+  .section-sub{font-size:12px;color:var(--text3);margin-top:2px;}
 
-  /* Year table */
-  .year-table-wrap { overflow-x: auto; }
-  .year-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-  }
-  .year-table th {
-    background: var(--card2);
-    color: var(--text2);
-    font-size: 11px;
-    font-weight: 600;
-    padding: 10px 12px;
-    text-align: center;
-    white-space: nowrap;
-    border-bottom: 1px solid var(--border);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-  }
-  .year-table th:first-child { text-align: left; }
-  .year-table td {
-    padding: 10px 12px;
-    text-align: center;
-    border-bottom: 1px solid rgba(37,48,72,0.5);
-    white-space: nowrap;
-    color: var(--text2);
-  }
-  .year-table td:first-child { text-align: left; font-weight: 600; color: var(--text); }
-  .year-table tr.bep-row td { background: rgba(16,185,129,0.07); }
-  .year-table tr.bep-row td:first-child { color: var(--green); }
-  .year-table .pos { color: var(--green); font-weight: 700; }
-  .year-table .neg { color: var(--red); font-weight: 600; }
-  .year-table .total-row td {
-    background: rgba(59,130,246,0.07);
-    font-weight: 700;
-    color: var(--text);
-    border-top: 1px solid var(--border);
-  }
-  .year-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    background: rgba(16,185,129,0.15);
-    color: var(--green);
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 10px;
-    font-weight: 700;
-  }
+  /* EMPTY STATE */
+  .empty-state{text-align:center;padding:60px 24px;color:var(--text3);}
+  .empty-state-icon{font-size:40px;margin-bottom:12px;}
+  .empty-state-text{font-size:14px;margin-bottom:8px;color:var(--text2);}
+  .empty-state-sub{font-size:12px;margin-bottom:20px;}
 
-  /* 5년 설치 입력 */
-  .install-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 12px;
-    margin-bottom: 16px;
-  }
-  .install-year {
-    background: var(--card2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px;
-    text-align: center;
-  }
-  .install-year-label {
-    font-size: 11px;
-    color: var(--text2);
-    font-weight: 600;
-    margin-bottom: 8px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-  .install-year input {
-    width: 100%;
-    text-align: center;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    color: var(--accent2);
-    font-size: 20px;
-    font-weight: 700;
-    padding: 8px 4px;
-    font-family: inherit;
-  }
-  .install-year input:focus { outline: 1px solid var(--accent); }
-  .install-year-sub { font-size: 10px; color: var(--text3); margin-top: 6px; }
+  /* MODAL */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+  .modal-box{background:var(--card);border:1px solid var(--border);border-radius:16px;width:540px;max-width:95vw;max-height:90vh;overflow-y:auto;padding:28px;position:relative;}
+  .modal-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+  .modal-close{position:absolute;top:20px;right:20px;width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:var(--card2);color:var(--text2);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;line-height:1;}
+  .modal-close:hover{border-color:var(--red);color:var(--red);}
+  .modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:24px;padding-top:16px;border-top:1px solid var(--border);}
 
-  /* 원가 vs 시장가 비교 */
-  .compare-table { width: 100%; border-collapse: collapse; }
-  .compare-table th {
-    background: var(--card2);
-    padding: 10px 14px;
-    font-size: 12px;
-    color: var(--text2);
-    font-weight: 600;
-    text-align: center;
-    border-bottom: 1px solid var(--border);
-  }
-  .compare-table th:first-child { text-align: left; }
-  .compare-table td {
-    padding: 9px 14px;
-    font-size: 12px;
-    color: var(--text2);
-    text-align: center;
-    border-bottom: 1px solid rgba(37,48,72,0.4);
-  }
-  .compare-table td:first-child { text-align: left; color: var(--text); }
-  .compare-table .highlight { color: var(--accent2); font-weight: 700; }
-  .compare-table .market { color: var(--accent3); font-weight: 700; }
-  .compare-table .gap-pos { color: var(--green); font-weight: 700; }
-  .compare-table .gap-neg { color: var(--red); font-weight: 700; }
-  .compare-table .section-header td {
-    background: rgba(37,48,72,0.3);
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--text3);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding: 6px 14px;
-  }
+  /* FORM */
+  .form-group{margin-bottom:14px;}
+  .form-label{display:block;font-size:11px;font-weight:600;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;}
+  .form-input{width:100%;background:var(--card2);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:8px;font-size:14px;font-family:inherit;transition:border-color .15s;}
+  .form-input:focus{outline:none;border-color:var(--accent);}
+  .form-select{width:100%;background:var(--card2);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:8px;font-size:14px;font-family:inherit;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;}
+  .form-select:focus{outline:none;border-color:var(--accent);}
+  .form-hint{font-size:11px;color:var(--text3);margin-top:4px;}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+  .form-section{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--border);}
 
-  /* Chart */
-  .chart-wrap { position: relative; height: 280px; }
-  .chart-wrap-lg { position: relative; height: 340px; }
+  /* INSTALL GRID */
+  .install-mini-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+  .install-mini{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 6px;text-align:center;}
+  .install-mini-label{font-size:9px;color:var(--text3);font-weight:600;margin-bottom:5px;text-transform:uppercase;}
+  .install-mini input{width:100%;text-align:center;background:var(--bg);border:1px solid var(--border);border-radius:5px;color:var(--accent2);font-size:16px;font-weight:700;padding:5px 2px;font-family:inherit;}
+  .install-mini input:focus{outline:1px solid var(--accent);border-color:var(--accent);}
+  .install-mini-sub{font-size:10px;color:var(--text3);margin-top:4px;}
 
-  /* Toggle */
-  .toggle-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 12px;
-  }
-  .toggle-label { font-size: 12px; color: var(--text2); }
-  .toggle {
-    position: relative;
-    width: 40px;
-    height: 20px;
-    flex-shrink: 0;
-  }
-  .toggle input { display: none; }
-  .toggle-slider {
-    position: absolute;
-    inset: 0;
-    background: var(--border);
-    border-radius: 10px;
-    cursor: pointer;
-    transition: 0.2s;
-  }
-  .toggle-slider::before {
-    content: '';
-    position: absolute;
-    left: 3px;
-    top: 3px;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: white;
-    transition: 0.2s;
-  }
-  .toggle input:checked + .toggle-slider { background: var(--accent); }
-  .toggle input:checked + .toggle-slider::before { transform: translateX(20px); }
+  /* CHART */
+  .chart-wrap{position:relative;height:280px;}
+  .chart-wrap-sm{position:relative;height:200px;}
+  .chart-wrap-lg{position:relative;height:340px;}
 
-  /* Pill tags */
-  .pill { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; }
-  .pill-blue { background: rgba(59,130,246,0.15); color: var(--accent); }
-  .pill-green { background: rgba(16,185,129,0.15); color: var(--green); }
-  .pill-amber { background: rgba(245,158,11,0.15); color: var(--accent3); }
-  .pill-red { background: rgba(239,68,68,0.15); color: var(--red); }
+  /* BEP BANNER */
+  .bep-banner{background:linear-gradient(135deg,rgba(16,185,129,.1),rgba(16,185,129,.05));border:1px solid rgba(16,185,129,.3);border-radius:10px;padding:14px 18px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;}
+  .bep-banner.loss{background:linear-gradient(135deg,rgba(239,68,68,.1),rgba(239,68,68,.05));border-color:rgba(239,68,68,.3);}
+  .bep-banner.instant{background:linear-gradient(135deg,rgba(34,211,238,.1),rgba(34,211,238,.05));border-color:rgba(34,211,238,.3);}
+  .bep-text{font-size:13px;color:var(--text);font-weight:600;}
+  .bep-sub{font-size:11px;color:var(--text2);margin-top:2px;}
+  .bep-value{font-size:22px;font-weight:800;}
+  .bep-banner .bep-value{color:var(--green);}
+  .bep-banner.loss .bep-value{color:var(--red);}
+  .bep-banner.instant .bep-value{color:var(--accent2);}
 
-  /* Info row */
-  .info-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 7px 0;
-    border-bottom: 1px solid rgba(37,48,72,0.4);
-    font-size: 12px;
+  /* DIVIDER */
+  .divider{height:1px;background:var(--border);margin:16px 0;}
+
+  /* DATA TABLES */
+  .data-table{width:100%;border-collapse:collapse;}
+  .data-table th{background:var(--card2);color:var(--text2);font-size:11px;font-weight:600;padding:10px 12px;text-align:center;white-space:nowrap;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.04em;}
+  .data-table th:first-child{text-align:left;}
+  .data-table td{padding:10px 12px;text-align:center;border-bottom:1px solid rgba(37,48,72,.5);white-space:nowrap;color:var(--text2);font-size:13px;}
+  .data-table td:first-child{text-align:left;font-weight:600;color:var(--text);}
+  .data-table .pos{color:var(--green);font-weight:700;}
+  .data-table .neg{color:var(--red);font-weight:600;}
+  .data-table .hl{color:var(--accent2);font-weight:600;}
+  .data-table .total-row td{background:rgba(59,130,246,.07);font-weight:700;color:var(--text);border-top:1px solid var(--border);}
+  .data-table .bep-row td{background:rgba(16,185,129,.07);}
+  .table-wrap{overflow-x:auto;}
+
+  /* COMPARE TABLE (cost tab) */
+  .cost-table{width:100%;border-collapse:collapse;}
+  .cost-table th{text-align:left;font-size:11px;color:var(--text3);font-weight:600;padding:0 0 8px;text-transform:uppercase;letter-spacing:.05em;}
+  .cost-table th:last-child{text-align:right;}
+  .cost-table td{padding:5px 0;font-size:12px;color:var(--text2);border-bottom:1px solid rgba(37,48,72,.4);}
+  .cost-table td:last-child{text-align:right;font-weight:600;color:var(--text);}
+  .cost-table tr.total td{border-top:1px solid var(--border);border-bottom:none;padding-top:10px;font-weight:700;color:var(--accent2);font-size:14px;}
+  .cost-table tr.subtotal td{color:var(--text);font-weight:600;font-size:12px;}
+  .compare-table{width:100%;border-collapse:collapse;}
+  .compare-table th{background:var(--card2);padding:10px 14px;font-size:12px;color:var(--text2);font-weight:600;text-align:center;border-bottom:1px solid var(--border);}
+  .compare-table th:first-child{text-align:left;}
+  .compare-table td{padding:9px 14px;font-size:12px;color:var(--text2);text-align:center;border-bottom:1px solid rgba(37,48,72,.4);}
+  .compare-table td:first-child{text-align:left;color:var(--text);}
+  .compare-table .highlight{color:var(--accent2);font-weight:700;}
+  .compare-table .market{color:var(--accent3);font-weight:700;}
+  .compare-table .gap-pos{color:var(--green);font-weight:700;}
+  .compare-table .gap-neg{color:var(--red);font-weight:700;}
+  .compare-table .section-header td{background:rgba(37,48,72,.3);font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;padding:6px 14px;}
+
+  .pill{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;}
+  .pill-blue{background:rgba(59,130,246,.15);color:var(--accent);}
+  .pill-green{background:rgba(16,185,129,.15);color:var(--green);}
+  .pill-amber{background:rgba(245,158,11,.15);color:var(--accent3);}
+  .pill-red{background:rgba(239,68,68,.15);color:var(--red);}
+  .year-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(16,185,129,.15);color:var(--green);padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;}
+
+  /* ANALYSIS SELECT */
+  .analysis-bar{display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap;}
+  .analysis-label{font-size:13px;color:var(--text2);font-weight:500;}
+  .analysis-select{background:var(--card2);border:1px solid var(--border);color:var(--text);padding:8px 32px 8px 12px;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;min-width:220px;}
+  .analysis-select:focus{outline:1px solid var(--accent);}
+
+  /* CHANNEL COLOR BAR */
+  .channel-bar{width:4px;border-radius:4px;flex-shrink:0;align-self:stretch;}
+
+  @media(max-width:900px){
+    .grid-3{grid-template-columns:repeat(2,1fr);}
+    .grid-4{grid-template-columns:repeat(2,1fr);}
+    .grid-auto{grid-template-columns:1fr;}
+    .form-row{grid-template-columns:1fr;}
+    .form-row-3{grid-template-columns:1fr 1fr;}
+    .install-mini-grid{grid-template-columns:repeat(5,1fr);}
   }
-  .info-row:last-child { border-bottom: none; }
-  .info-row .label { color: var(--text2); }
-  .info-row .value { font-weight: 600; color: var(--text); }
-  .info-row .value.highlight { color: var(--accent2); }
+  @media(max-width:600px){
+    .install-mini-grid{grid-template-columns:repeat(3,1fr);}
+  }
 </style>
 </head>
 <body>
 
 <div class="header">
   <div>
-    <div class="header-title">바이온에버 CPO 손익분기점 시뮬레이터</div>
-    <div class="header-sub">OASIS 7kW 충전기 | 원가계산보고서(2026.05) 기반 | 5개년 시뮬레이션</div>
+    <div class="header-title">바이온에버 CPO 통합 수익 시뮬레이터</div>
+    <div class="header-sub">다중 충전기 모델 · 판매처별 수익 분석 시스템</div>
   </div>
-  <div style="display:flex;align-items:center;gap:10px">
-    <div class="header-badge">BSS007K-V11-J 기준</div>
-    <button id="btn-save" onclick="saveSettings()" style="background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.4);color:#10b981;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all 0.2s" onmouseover="this.style.background='rgba(16,185,129,0.25)'" onmouseout="this.style.background='rgba(16,185,129,0.15)'">
-      💾 설정 저장
-    </button>
-    <span id="save-status" style="font-size:11px;color:#64748b"></span>
+  <div class="header-right">
+    <button class="btn-green" onclick="saveState(true)">💾 저장</button>
+    <span id="save-status" style="font-size:11px;color:var(--text3)"></span>
   </div>
 </div>
 
 <div class="container">
 
-  <!-- Tabs -->
   <div class="tabs">
-    <button class="tab active" onclick="switchTab('main')">📊 분석 · 시뮬레이션</button>
-    <button class="tab" onclick="switchTab('cost')">💰 원가 구조 분석</button>
+    <button class="tab active" onclick="switchTab('dashboard',this)">📊 대시보드</button>
+    <button class="tab" onclick="switchTab('models',this)">⚡ 모델 관리</button>
+    <button class="tab" onclick="switchTab('channels',this)">🏪 판매처 관리</button>
+    <button class="tab" onclick="switchTab('analysis',this)">📈 분석</button>
+    <button class="tab" onclick="switchTab('cost',this)">💰 원가 구조</button>
   </div>
 
-  <!-- ===== TAB 1: 통합 분석+시뮬레이션 ===== -->
-  <div id="panel-main" class="panel active">
-    <div class="layout-wrap">
+  <!-- ===== DASHBOARD ===== -->
+  <div id="panel-dashboard" class="panel active">
+    <div id="dashboard-content"></div>
+  </div>
 
-      <!-- ── 공통 사이드바 ── -->
-      <div class="sidebar">
-        <div class="card" style="margin-bottom:14px">
-          <div class="card-title">원가 설정 <span class="pill pill-blue">원가계산서 기반</span></div>
-
-          <div class="control-group">
-            <div class="control-row">
-              <span class="control-label">충전기 제조원가 (VAT 제외)</span>
-              <span class="control-value" id="v-device-cost">876,000원</span>
-            </div>
-            <input type="range" id="s-device-cost" min="600000" max="1200000" step="10000" value="876000" oninput="update()">
-            <div style="font-size:10px;color:var(--text3);margin-top:3px">원가계산서 기준: V10=879,000 / V11=876,000원</div>
-          </div>
-
-          <div class="control-group">
-            <div class="control-row">
-              <span class="control-label">전기공사비 (한전 연결포함)</span>
-              <span class="control-value" id="v-elec-cost">870,000원</span>
-            </div>
-            <input type="range" id="s-elec-cost" min="500000" max="2000000" step="50000" value="870000" oninput="update()">
-          </div>
-
-          <div class="control-group">
-            <div class="control-row">
-              <span class="control-label">정부보조금 수령액</span>
-              <span class="control-value" id="v-subsidy">2000000원</span>
-            </div>
-            <input type="range" id="s-subsidy" min="0" max="3000000" step="100000" value="2000000" oninput="update()">
-          </div>
-
-          <div class="divider"></div>
-
-          <div class="control-group">
-            <div class="control-row">
-              <span class="control-label">유지보수비 (월/대)</span>
-              <span class="control-value" id="v-maint">25,000원</span>
-            </div>
-            <input type="range" id="s-maint" min="5000" max="60000" step="1000" value="25000" oninput="update()">
-          </div>
-
-          <div class="control-group">
-            <div class="control-row">
-              <span class="control-label">부지 임차료 (월/대)</span>
-              <span class="control-value" id="v-rent">15,000원</span>
-            </div>
-            <input type="range" id="s-rent" min="0" max="50000" step="1000" value="15000" oninput="update()">
-          </div>
-
-          <div class="control-group">
-            <div class="control-row">
-              <span class="control-label">플랫폼/통신비 (월/대)</span>
-              <span class="control-value" id="v-platform">5,000원</span>
-            </div>
-            <input type="range" id="s-platform" min="0" max="20000" step="500" value="5000" oninput="update()">
-          </div>
-
-          <div class="control-group">
-            <div class="control-row">
-              <span class="control-label">운영 인건비 배분 (월/대) <span class="pill pill-amber">추정</span></span>
-              <span class="control-value" id="v-labor">20,000원</span>
-            </div>
-            <input type="range" id="s-labor" min="0" max="80000" step="1000" value="20000" oninput="update()">
-            <div id="labor-hint" style="font-size:10px;color:var(--text3);margin-top:4px;line-height:1.6">
-              <span style="color:var(--text2);font-weight:600">추정 근거:</span>
-              환경부 기준 300대당 담당자 1명 · 전기기사 월 292만원(고용노동부 2025)<br>
-              → 직접인건비 <b style="color:var(--accent2)">약 9,700원/대</b> + CS·관리직 간접비 ≈ <b style="color:var(--accent2)">약 2만원/대</b><br>
-              1인 관리 대수: <span id="v-labor-count" style="color:var(--accent2);font-weight:700">175</span>대 (현재값 기준)
-            </div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-title">매출 파라미터</div>
-
-          <div class="control-group">
-            <div class="control-row">
-              <span class="control-label">충전 판매단가 (원/kWh)</span>
-              <span class="control-value" id="v-price">295원</span>
-            </div>
-            <input type="range" id="s-price" min="200" max="500" step="5" value="295" oninput="update()">
-            <div style="font-size:10px;color:var(--text3);margin-top:3px">시장 참고: 완속 250~350원/kWh</div>
-          </div>
-
-          <div class="control-group">
-            <div class="control-row">
-              <span class="control-label">전기 구매단가 (원/kWh)</span>
-              <span class="control-value" id="v-buy-price">110원</span>
-            </div>
-            <input type="range" id="s-buy-price" min="80" max="200" step="5" value="110" oninput="update()">
-          </div>
-
-          <div class="control-group">
-            <div class="control-row">
-              <span class="control-label">대당 평균 월 충전 시간</span>
-              <span class="control-value" id="v-hours">35.7시간</span>
-            </div>
-            <input type="range" id="s-hours" min="1" max="200" step="0.5" value="35.7" oninput="update()">
-            <div style="display:flex;justify-content:space-between;margin-top:4px">
-              <span style="font-size:10px;color:var(--text3)">월 충전량: <span id="v-kwh-derived" style="color:var(--accent2);font-weight:600">250kWh</span> (7kW × 시간)</span>
-              <span style="font-size:10px;color:var(--text3)">1일 <span id="v-hours-daily" style="color:var(--text2)">약 1.2시간</span></span>
-            </div>
-          </div>
-        </div>
+  <!-- ===== MODELS ===== -->
+  <div id="panel-models" class="panel">
+    <div class="section-header">
+      <div>
+        <div class="section-title">충전기 모델 관리</div>
+        <div class="section-sub">모델별 제조원가 · 설치비 · 운영비 설정</div>
       </div>
+      <button class="btn-primary" onclick="openModelModal(null)">＋ 모델 추가</button>
+    </div>
+    <div id="models-content"></div>
+  </div>
 
-      <!-- ── 우측: 내부 탭 ── -->
-      <div class="right-area">
-        <div class="inner-tabs">
-          <button class="inner-tab active" onclick="switchInner('bep', this)">📈 대당 단위 경제성</button>
-          <button class="inner-tab" onclick="switchInner('5year', this)">📅 5개년 사업 시뮬레이션</button>
-        </div>
+  <!-- ===== CHANNELS ===== -->
+  <div id="panel-channels" class="panel">
+    <div class="section-header">
+      <div>
+        <div class="section-title">판매처 관리</div>
+        <div class="section-sub">판매처별 단가 · 사용량 · 5개년 설치 계획 설정</div>
+      </div>
+      <button class="btn-primary" onclick="openChannelModal(null)">＋ 판매처 추가</button>
+    </div>
+    <div id="channels-content"></div>
+  </div>
 
-        <!-- ── 내부 탭 A: 대당 단위 경제성 ── -->
-        <div id="inner-bep" class="inner-panel active">
+  <!-- ===== ANALYSIS ===== -->
+  <div id="panel-analysis" class="panel">
+    <div class="inner-tabs">
+      <button class="inner-tab active" onclick="switchAnalysis('models',this)">📦 모델별 분석</button>
+      <button class="inner-tab" onclick="switchAnalysis('channels',this)">🏪 판매처별 분석</button>
+      <button class="inner-tab" onclick="switchAnalysis('compare',this)">⚖️ 비교 분석</button>
+      <button class="inner-tab" onclick="switchAnalysis('portfolio',this)">🗂️ 포트폴리오</button>
+    </div>
+    <div id="an-models" class="inner-panel active"></div>
+    <div id="an-channels" class="inner-panel"></div>
+    <div id="an-compare" class="inner-panel"></div>
+    <div id="an-portfolio" class="inner-panel"></div>
+  </div>
 
-          <!-- BEP Banner -->
-          <div class="bep-banner" id="bep-banner">
-            <div>
-              <div class="bep-text">대당 투자 회수기간 (BEP)</div>
-              <div class="bep-sub" id="bep-sub">초기 투자비 / 대당 월 이익</div>
-            </div>
-            <div class="bep-value" id="bep-value">계산중...</div>
-          </div>
-
-          <!-- KPI Row 1: 대당 지표 -->
-          <div class="grid-3" style="margin-bottom:14px">
-            <div class="kpi-card blue">
-              <div class="kpi-label">대당 순 초기투자</div>
-              <div class="kpi-value" id="kpi-net-invest">-</div>
-              <div class="kpi-sub">장치+공사−보조금</div>
-            </div>
-            <div class="kpi-card cyan">
-              <div class="kpi-label">대당 월 매출</div>
-              <div class="kpi-value" id="kpi-unit-rev">-</div>
-              <div class="kpi-sub" id="kpi-unit-rev-sub">-</div>
-            </div>
-            <div class="kpi-card green">
-              <div class="kpi-label">대당 월 기여이익</div>
-              <div class="kpi-value" id="kpi-monthly-margin">-</div>
-              <div class="kpi-sub">매출 − 변동비</div>
-            </div>
-          </div>
-
-          <!-- KPI Row 2: 대당 비용 분해 -->
-          <div class="grid-3" style="margin-bottom:14px">
-            <div class="kpi-card amber">
-              <div class="kpi-label">대당 월 전기비</div>
-              <div class="kpi-value" id="kpi-unit-elec">-</div>
-              <div class="kpi-sub">구매단가 × 충전량</div>
-            </div>
-            <div class="kpi-card blue">
-              <div class="kpi-label">대당 월 고정비</div>
-              <div class="kpi-value" id="kpi-unit-fixed">-</div>
-              <div class="kpi-sub" id="kpi-unit-fixed-sub">유지+임차+플랫폼+인건비</div>
-            </div>
-            <div class="kpi-card amber">
-              <div class="kpi-label">마진율</div>
-              <div class="kpi-value" id="kpi-margin-rate">-</div>
-              <div class="kpi-sub">기여이익 / 매출</div>
-            </div>
-          </div>
-
-          <!-- 차트 -->
-          <div class="card">
-            <div class="card-title">대당 누적 현금흐름 (15년)</div>
-            <div class="chart-wrap">
-              <canvas id="bepChart"></canvas>
-            </div>
-          </div>
-        </div>
-
-        <!-- ── 내부 탭 B: 5개년 사업 시뮬레이션 ── -->
-        <div id="inner-5year" class="inner-panel">
-
-          <!-- 설치 계획 입력 -->
-          <div class="card" style="margin-bottom:16px">
-            <div class="card-title">연도별 신규 설치 대수 입력</div>
-            <div class="install-grid">
-              <div class="install-year">
-                <div class="install-year-label">1년차 (2026)</div>
-                <input type="number" id="y1" value="100" min="0" max="5000" oninput="update5year()">
-                <div class="install-year-sub">신규 설치</div>
-              </div>
-              <div class="install-year">
-                <div class="install-year-label">2년차 (2027)</div>
-                <input type="number" id="y2" value="200" min="0" max="5000" oninput="update5year()">
-                <div class="install-year-sub">신규 설치</div>
-              </div>
-              <div class="install-year">
-                <div class="install-year-label">3년차 (2028)</div>
-                <input type="number" id="y3" value="300" min="0" max="5000" oninput="update5year()">
-                <div class="install-year-sub">신규 설치</div>
-              </div>
-              <div class="install-year">
-                <div class="install-year-label">4년차 (2029)</div>
-                <input type="number" id="y4" value="400" min="0" max="5000" oninput="update5year()">
-                <div class="install-year-sub">신규 설치</div>
-              </div>
-              <div class="install-year">
-                <div class="install-year-label">5년차 (2030)</div>
-                <input type="number" id="y5" value="500" min="0" max="5000" oninput="update5year()">
-                <div class="install-year-sub">신규 설치</div>
-              </div>
-            </div>
-            <div style="font-size:11px;color:var(--text3)">※ 매 연도 신규 설치 대수 입력 → 누적 운영 대수 및 손익 자동 계산 (좌측 파라미터 공유)</div>
-          </div>
-
-          <!-- 5년 KPI -->
-          <div class="grid-3" style="margin-bottom:16px">
-            <div class="kpi-card blue">
-              <div class="kpi-label">5년 누적 설치</div>
-              <div class="kpi-value" id="y5-total-units">-</div>
-              <div class="kpi-sub">총 설치 대수</div>
-            </div>
-            <div class="kpi-card cyan">
-              <div class="kpi-label">5년 총 매출</div>
-              <div class="kpi-value" id="y5-total-rev">-</div>
-              <div class="kpi-sub">운영 수익 합계</div>
-            </div>
-            <div class="kpi-card green">
-              <div class="kpi-label">5년 영업이익 합계</div>
-              <div class="kpi-value" id="y5-total-profit">-</div>
-              <div class="kpi-sub">투자 제외</div>
-            </div>
-            <div class="kpi-card amber">
-              <div class="kpi-label">5년 총 투자액</div>
-              <div class="kpi-value" id="y5-total-invest">-</div>
-              <div class="kpi-sub">장치+공사−보조금</div>
-            </div>
-            <div class="kpi-card blue">
-              <div class="kpi-label">5년 누적 순손익</div>
-              <div class="kpi-value" id="y5-total-net">-</div>
-              <div class="kpi-sub">영업이익−투자</div>
-            </div>
-            <div class="kpi-card cyan">
-              <div class="kpi-label">5년말 운영 대수</div>
-              <div class="kpi-value" id="y5-end-units">-</div>
-              <div class="kpi-sub">5년 누적</div>
-            </div>
-          </div>
-
-          <!-- 상세 테이블 -->
-          <div class="card" style="margin-bottom:16px">
-            <div class="card-title">연도별 손익 상세</div>
-            <div class="year-table-wrap">
-              <table class="year-table">
-                <thead>
-                  <tr>
-                    <th>연도</th>
-                    <th>신규설치</th>
-                    <th>누적운영</th>
-                    <th>설치투자액</th>
-                    <th>연간매출</th>
-                    <th>연간변동비</th>
-                    <th>영업이익</th>
-                    <th>당기순손익</th>
-                    <th>누적순손익</th>
-                    <th>상태</th>
-                  </tr>
-                </thead>
-                <tbody id="five-year-tbody"></tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- 차트 -->
-          <div class="grid-2">
-            <div class="card">
-              <div class="card-title">연도별 매출 / 비용 / 이익</div>
-              <div class="chart-wrap">
-                <canvas id="chart5yearBar"></canvas>
-              </div>
-            </div>
-            <div class="card">
-              <div class="card-title">누적 순손익 추이</div>
-              <div class="chart-wrap">
-                <canvas id="chart5yearLine"></canvas>
-              </div>
-            </div>
-          </div>
-        </div><!-- /inner-5year -->
-
-      </div><!-- /right-area -->
-    </div><!-- /layout-wrap -->
-  </div><!-- /panel-main -->
-
-  <!-- ===== TAB 3: 원가 구조 분석 ===== -->
+  <!-- ===== COST STRUCTURE (static) ===== -->
   <div id="panel-cost" class="panel">
-    
     <div class="grid-2" style="margin-bottom:20px">
-      <!-- 원가계산서 내역 -->
       <div class="card">
         <div class="card-title">제조원가계산서 상세 (BSS007K-V11-J)</div>
         <table class="cost-table">
-          <thead>
-            <tr><th>비목</th><th>금액 (원)</th></tr>
-          </thead>
+          <thead><tr><th>비목</th><th>금액 (원)</th></tr></thead>
           <tbody>
             <tr class="subtotal"><td colspan="2" style="color:var(--text3);font-size:11px;padding-top:8px">① 재료비</td></tr>
             <tr><td>직접재료비 (부품 295종)</td><td>518,861</td></tr>
-            <tr><td>&nbsp;&nbsp;· PCB/모듈 주요 부품</td><td style="color:var(--text3)">포함</td></tr>
             <tr><td>&nbsp;&nbsp;· 커플러 (EL-A30325PS)</td><td style="color:var(--text3)">59,850</td></tr>
             <tr><td>간접재료비</td><td>-</td></tr>
             <tr class="subtotal"><td>재료비 소계</td><td>518,861</td></tr>
-            
             <tr class="subtotal"><td colspan="2" style="color:var(--text3);font-size:11px;padding-top:8px">② 노무비</td></tr>
             <tr><td>직접노무비 (25공정)</td><td>43,019</td></tr>
             <tr><td>간접노무비 (30.04%)</td><td>12,922</td></tr>
             <tr class="subtotal"><td>노무비 소계</td><td>55,941</td></tr>
-            
             <tr class="subtotal"><td colspan="2" style="color:var(--text3);font-size:11px;padding-top:8px">③ 경비</td></tr>
             <tr><td>외주가공비 (FYD SMT+KS조립)</td><td>94,621</td></tr>
             <tr><td>시험검사비 (각종 인증)</td><td>20,048</td></tr>
             <tr><td>복리후생비 외</td><td>119,389</td></tr>
             <tr class="subtotal"><td>경비 소계</td><td>234,058</td></tr>
-            
             <tr class="subtotal"><td colspan="2" style="color:var(--text3);font-size:11px;padding-top:8px">이익/세금</td></tr>
             <tr><td>④ 일반관리비 (7%)</td><td>56,620</td></tr>
             <tr><td>⑤ 이윤 (4.46%)</td><td>11,239</td></tr>
@@ -827,135 +327,47 @@
           </tbody>
         </table>
       </div>
-
-      <!-- 원가 구조 -->
       <div>
         <div class="card" style="margin-bottom:16px">
           <div class="card-title">원가 구성 비율</div>
-          <div class="chart-wrap">
-            <canvas id="costPieChart"></canvas>
-          </div>
+          <div class="chart-wrap"><canvas id="costPieChart"></canvas></div>
         </div>
-        
         <div class="card">
           <div class="card-title">버전별 원가 비교</div>
           <table class="compare-table">
-            <thead>
-              <tr>
-                <th>항목</th>
-                <th>V10-J</th>
-                <th>V11-J</th>
-                <th>차이</th>
-              </tr>
-            </thead>
+            <thead><tr><th>항목</th><th>V10-J</th><th>V11-J</th><th>차이</th></tr></thead>
             <tbody>
               <tr class="section-header"><td colspan="4">제조원가</td></tr>
-              <tr>
-                <td>재료비</td>
-                <td>516,465원</td>
-                <td class="highlight">518,861원</td>
-                <td class="gap-neg">+2,396</td>
-              </tr>
-              <tr>
-                <td>노무비</td>
-                <td>57,586원</td>
-                <td class="highlight">55,941원</td>
-                <td class="gap-pos">-1,645</td>
-              </tr>
-              <tr>
-                <td>경비</td>
-                <td>237,571원</td>
-                <td class="highlight">234,058원</td>
-                <td class="gap-pos">-3,513</td>
-              </tr>
-              <tr>
-                <td>일반관리비</td>
-                <td>56,813원</td>
-                <td class="highlight">56,620원</td>
-                <td class="gap-pos">-193</td>
-              </tr>
-              <tr>
-                <td>이윤</td>
-                <td>11,477원</td>
-                <td class="highlight">11,239원</td>
-                <td class="gap-pos">-238</td>
-              </tr>
+              <tr><td>재료비</td><td>516,465원</td><td class="highlight">518,861원</td><td class="gap-neg">+2,396</td></tr>
+              <tr><td>노무비</td><td>57,586원</td><td class="highlight">55,941원</td><td class="gap-pos">-1,645</td></tr>
+              <tr><td>경비</td><td>237,571원</td><td class="highlight">234,058원</td><td class="gap-pos">-3,513</td></tr>
+              <tr><td>일반관리비</td><td>56,813원</td><td class="highlight">56,620원</td><td class="gap-pos">-193</td></tr>
+              <tr><td>이윤</td><td>11,477원</td><td class="highlight">11,239원</td><td class="gap-pos">-238</td></tr>
               <tr class="section-header"><td colspan="4">판매가격</td></tr>
-              <tr>
-                <td>총원가 (VAT제외)</td>
-                <td class="market">879,000원</td>
-                <td class="highlight">876,000원</td>
-                <td class="gap-pos">-3,000</td>
-              </tr>
-              <tr>
-                <td>총금액 (VAT포함)</td>
-                <td class="market">966,900원</td>
-                <td class="highlight">963,600원</td>
-                <td class="gap-pos">-3,300</td>
-              </tr>
+              <tr><td>총원가 (VAT제외)</td><td class="market">879,000원</td><td class="highlight">876,000원</td><td class="gap-pos">-3,000</td></tr>
+              <tr><td>총금액 (VAT포함)</td><td class="market">966,900원</td><td class="highlight">963,600원</td><td class="gap-pos">-3,300</td></tr>
             </tbody>
           </table>
         </div>
       </div>
     </div>
-
-    <!-- 시장가 대비 원가 분석 -->
     <div class="card" style="margin-bottom:20px">
       <div class="card-title">CPO 사업 수익성 분석 (충전기 원가 대비 시장가)</div>
       <table class="compare-table">
-        <thead>
-          <tr>
-            <th>항목</th>
-            <th>바이온에버 원가</th>
-            <th>시장 판매가 (참고)</th>
-            <th>자체 설치 절감액</th>
-            <th>비고</th>
-          </tr>
-        </thead>
+        <thead><tr><th>항목</th><th>바이온에버 원가</th><th>시장 판매가 (참고)</th><th>자체 설치 절감액</th><th>비고</th></tr></thead>
         <tbody>
-          <tr>
-            <td>7kW 완속충전기</td>
-            <td class="highlight">963,600원 (VAT포함)</td>
-            <td class="market">1,500,000~2,000,000원</td>
-            <td class="gap-pos">536,400~1,036,400원</td>
-            <td>자사 제조 강점</td>
-          </tr>
-          <tr>
-            <td>전기공사비</td>
-            <td class="highlight">870,000원 (시뮬 기본값)</td>
-            <td class="market">800,000~1,500,000원</td>
-            <td>-</td>
-            <td>현장별 상이</td>
-          </tr>
-          <tr>
-            <td>정부보조금</td>
-            <td class="highlight">-2,000,000원</td>
-            <td class="market">-2,000,000원</td>
-            <td>-</td>
-            <td>동일 조건</td>
-          </tr>
-          <tr>
-            <td><strong>순 투자비 (자체)</strong></td>
-            <td class="highlight"><strong>-166,400원 (이익)</strong></td>
-            <td class="market">300,000~1,500,000원</td>
-            <td class="gap-pos"><strong>466,400~1,666,400원</strong></td>
-            <td><span class="pill pill-green">핵심 경쟁력</span></td>
-          </tr>
+          <tr><td>7kW 완속충전기</td><td class="highlight">963,600원 (VAT포함)</td><td class="market">1,500,000~2,000,000원</td><td class="gap-pos">536,400~1,036,400원</td><td>자사 제조 강점</td></tr>
+          <tr><td>전기공사비</td><td class="highlight">870,000원 (기본값)</td><td class="market">800,000~1,500,000원</td><td>-</td><td>현장별 상이</td></tr>
+          <tr><td>정부보조금</td><td class="highlight">-2,000,000원</td><td class="market">-2,000,000원</td><td>-</td><td>동일 조건</td></tr>
+          <tr><td><strong>순 투자비 (자체)</strong></td><td class="highlight"><strong>-166,400원 (이익)</strong></td><td class="market">300,000~1,500,000원</td><td class="gap-pos"><strong>466,400~1,666,400원</strong></td><td><span class="pill pill-green">핵심 경쟁력</span></td></tr>
         </tbody>
       </table>
-      <div style="font-size:11px;color:var(--text3);margin-top:12px">
-        ※ 원가 876,000원 + 공사비 870,000원 = 1,746,000원 → 보조금 2,000,000원 수령 시 순 투자 없이 충전기 설치 가능 (이론상)<br>
-        ※ 실제 현장 상황(공사비 변동, 추가 인허가 비용 등)에 따라 달라질 수 있습니다.
-      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:12px">※ 원가 876,000원 + 공사비 870,000원 = 1,746,000원 → 보조금 2,000,000원 수령 시 순 투자 없이 설치 가능 (이론상)</div>
     </div>
-
-    <!-- 주요 원가 항목 -->
     <div class="card">
       <div class="card-title">주요 원가 항목 상세 (Top 10 부품)</div>
       <table class="compare-table">
-        <thead>
-          <tr><th>구분</th><th>품목명</th><th>규격</th><th>단가</th><th>수량</th><th>금액</th><th>비중</th></tr>
-        </thead>
+        <thead><tr><th>구분</th><th>품목명</th><th>규격</th><th>단가</th><th>수량</th><th>금액</th><th>비중</th></tr></thead>
         <tbody>
           <tr><td>부자재</td><td>충전 커플러</td><td>EL-A30325PS</td><td>59,850원</td><td>1</td><td class="highlight">59,850원</td><td>11.5%</td></tr>
           <tr><td>MAIN</td><td>프로세서 IC</td><td>CM-AM3358A100</td><td>59,850원</td><td>1</td><td class="highlight">59,850원</td><td>11.5%</td></tr>
@@ -974,423 +386,996 @@
 
 </div><!-- /container -->
 
+<!-- ===== MODAL ===== -->
+<div id="modal-overlay" class="modal-overlay" style="display:none" onclick="closeModalOverlay(event)">
+  <div id="modal-box" class="modal-box">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
 <script>
-// ==================== 상태 ====================
-let bepChart = null;
-let chart5yearBar = null;
-let chart5yearLine = null;
-let costPieChart = null;
+// =========================================================
+// CONFIG
+// =========================================================
+const COLORS = ['#3b82f6','#10b981','#f59e0b','#8b5cf6','#22d3ee','#ef4444','#ec4899','#14b8a6','#f97316','#a3e635'];
+const CH_TYPES = {
+  direct:'직접 CPO',apartment:'아파트/주거',corporate:'기업/직장',
+  government:'지자체/공공',commercial:'상업시설',highway:'고속도로/주유소',other:'기타'
+};
+const CH_TYPE_BADGES = {
+  direct:'badge-blue',apartment:'badge-green',corporate:'badge-cyan',
+  government:'badge-amber',commercial:'badge-purple',highway:'badge-gray',other:'badge-gray'
+};
+const YEARS = ['2026','2027','2028','2029','2030'];
 
-function fmt(n, unit='원') {
-  if (Math.abs(n) >= 1e8) return (n/1e8).toFixed(1) + '억' + unit;
-  if (Math.abs(n) >= 1e6) return (n/1e6).toFixed(1) + '백만' + unit;
-  if (Math.abs(n) >= 1e4) return Math.round(n/1e4) + '만' + unit;
-  return Math.round(n).toLocaleString() + unit;
-}
-function fmtK(n, unit='원') {
-  return Math.round(n).toLocaleString() + unit;
-}
+// =========================================================
+// STATE
+// =========================================================
+const DEFAULT_MODELS = [
+  {id:'m-v11',name:'OASIS 7kW V11',code:'BSS007K-V11-J',kw:7,
+   deviceCost:876000,elecCost:870000,subsidy:2000000,
+   maint:25000,rent:15000,platform:5000,labor:20000},
+  {id:'m-v10',name:'OASIS 7kW V10',code:'BSS007K-V10-J',kw:7,
+   deviceCost:879000,elecCost:870000,subsidy:2000000,
+   maint:25000,rent:15000,platform:5000,labor:20000},
+];
+const DEFAULT_CHANNELS = [
+  {id:'c-direct',name:'직접 CPO 운영',type:'direct',modelId:'m-v11',
+   price:295,buyPrice:110,hours:35.7,colorIdx:0,
+   installs:[100,200,300,400,500]},
+];
 
-function switchTab(tab) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('panel-' + tab).classList.add('active');
-  event.target.classList.add('active');
-  if (tab === 'cost') initCostChart();
-}
+let ST = { models:[...DEFAULT_MODELS], channels:[...DEFAULT_CHANNELS] };
+let currentAnalysisTab = 'models';
+let editingModelId = null;
+let editingChannelId = null;
+const charts = {};
 
-function switchInner(name, btn) {
-  document.querySelectorAll('.inner-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.inner-panel').forEach(p => p.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('inner-' + name).classList.add('active');
-  if (name === '5year') update5year();
-}
+function getState() { return ST; }
 
-// ==================== 파라미터 읽기 ====================
-function getParams() {
-  const hours = +document.getElementById('s-hours').value;
-  const kwh = hours * 7; // 7kW 충전기 기준 월 충전량
-  return {
-    deviceCost: +document.getElementById('s-device-cost').value,
-    elecCost:   +document.getElementById('s-elec-cost').value,
-    subsidy:    +document.getElementById('s-subsidy').value,
-    maint:      +document.getElementById('s-maint').value,
-    rent:       +document.getElementById('s-rent').value,
-    platform:   +document.getElementById('s-platform').value,
-    labor:      +document.getElementById('s-labor').value,
-    price:      +document.getElementById('s-price').value,
-    buyPrice:   +document.getElementById('s-buy-price').value,
-    hours,
-    kwh,
-  };
+function saveState(manual=false) {
+  try {
+    localStorage.setItem('cpo-v2',JSON.stringify(ST));
+    if (manual) {
+      const el = document.getElementById('save-status');
+      if (el) { el.textContent='✓ 저장됨 '+new Date().toLocaleTimeString('ko-KR'); el.style.color='#10b981'; setTimeout(()=>{el.style.color='#64748b';},2500); }
+    }
+  } catch(e) {}
 }
 
-// ==================== BEP (대당 단위 경제성) ====================
-function update() {
-  const p = getParams();
+function loadState() {
+  try {
+    const raw = localStorage.getItem('cpo-v2');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.models && parsed.channels) ST = parsed;
+    }
+  } catch(e) {}
+}
 
-  // 사이드바 표시값 업데이트
-  document.getElementById('v-device-cost').textContent  = p.deviceCost.toLocaleString() + '원';
-  document.getElementById('v-elec-cost').textContent    = p.elecCost.toLocaleString() + '원';
-  document.getElementById('v-subsidy').textContent      = p.subsidy.toLocaleString() + '원';
-  document.getElementById('v-maint').textContent        = p.maint.toLocaleString() + '원';
-  document.getElementById('v-rent').textContent         = p.rent.toLocaleString() + '원';
-  document.getElementById('v-platform').textContent     = p.platform.toLocaleString() + '원';
-  document.getElementById('v-labor').textContent        = p.labor.toLocaleString() + '원';
-  // 전기기사 월 292만원(고용노동부 2025) 기준, 간접비(4대보험+퇴직급여 약 20%) 포함 시 실질 월 인건비 약 350만원
-  const laborCount = p.labor > 0 ? Math.round(3500000 / p.labor) : '∞';
-  document.getElementById('v-labor-count').textContent  = laborCount.toLocaleString();
-  document.getElementById('v-price').textContent        = p.price + '원';
-  document.getElementById('v-buy-price').textContent    = p.buyPrice + '원';
-  document.getElementById('v-hours').textContent        = p.hours.toFixed(1) + '시간';
-  document.getElementById('v-kwh-derived').textContent  = Math.round(p.kwh) + 'kWh';
-  document.getElementById('v-hours-daily').textContent  = '약 ' + (p.hours / 30).toFixed(1) + '시간';
+// =========================================================
+// UTILS
+// =========================================================
+function uuid() { return 'id-'+Date.now().toString(36)+Math.random().toString(36).substr(2,5); }
 
-  // ── 대당 계산 ──
-  const netInvest    = p.deviceCost + p.elecCost - p.subsidy;  // 대당 순투자
-  const unitRev      = p.price * p.kwh;                         // 대당 월 매출
-  const unitElec     = p.buyPrice * p.kwh;                      // 대당 월 전기비
-  const unitFixed    = p.maint + p.rent + p.platform + p.labor; // 대당 월 고정운영비 (인건비 포함)
-  const unitVarCost  = unitElec + unitFixed;                     // 대당 월 변동비 합계
-  const unitMargin   = unitRev - unitVarCost;                    // 대당 월 기여이익
-  const marginRate   = unitRev > 0 ? (unitMargin / unitRev * 100) : 0;
+function fmt(n) {
+  if (n===Infinity||n===-Infinity||isNaN(n)) return '-';
+  const abs=Math.abs(n);
+  if (abs>=1e8) return (n/1e8).toFixed(1)+'억원';
+  if (abs>=1e6) return (n/1e6).toFixed(1)+'백만원';
+  if (abs>=1e4) return Math.round(n/1e4)+'만원';
+  return Math.round(n).toLocaleString()+'원';
+}
 
-  // KPI 표시
-  document.getElementById('kpi-net-invest').textContent   = fmt(netInvest);
-  document.getElementById('kpi-unit-rev').textContent     = fmt(unitRev);
-  document.getElementById('kpi-unit-rev-sub').textContent = Math.round(p.kwh) + 'kWh × ' + p.price + '원';
-  document.getElementById('kpi-monthly-margin').textContent = fmt(unitMargin);
-  document.getElementById('kpi-unit-elec').textContent    = fmt(unitElec);
-  document.getElementById('kpi-unit-fixed').textContent   = fmt(unitFixed);
-  document.getElementById('kpi-unit-fixed-sub').textContent = `유지${fmt(p.maint)}+임차${fmt(p.rent)}+플랫폼${fmt(p.platform)}+인건비${fmt(p.labor)}`;
+function fmtN(n) { return Math.round(n).toLocaleString(); }
 
-  // BEP 배너 (대당 기준)
-  const bepBanner = document.getElementById('bep-banner');
-  const bepValue  = document.getElementById('bep-value');
-  const bepSub    = document.getElementById('bep-sub');
+function fmtBep(months) {
+  if (months<=0) return '즉시 흑자';
+  if (!isFinite(months)) return '회수 불가';
+  if (months<12) return months.toFixed(1)+'개월';
+  return (months/12).toFixed(1)+'년';
+}
 
-  if (unitMargin <= 0) {
-    bepBanner.className = 'bep-banner loss';
-    bepValue.textContent = '회수 불가';
-    bepSub.textContent   = '판매단가를 높이거나 비용을 줄이세요';
-  } else if (netInvest <= 0) {
-    bepBanner.className  = 'bep-banner';
-    bepValue.textContent = '설치 즉시 흑자';
-    bepSub.textContent   = '보조금이 투자비를 초과합니다';
+function getColor(idx) { return COLORS[idx%COLORS.length]; }
+function getModelById(id) { return ST.models.find(m=>m.id===id); }
+function getChannelById(id) { return ST.channels.find(c=>c.id===id); }
+function destroyChart(id) { if(charts[id]){charts[id].destroy();delete charts[id];} }
+
+// =========================================================
+// CALCULATIONS
+// =========================================================
+function calcModel(model) {
+  const netInvest = model.deviceCost + model.elecCost - model.subsidy;
+  const monthlyFixed = model.maint + model.rent + model.platform + model.labor;
+  return { netInvest, monthlyFixed };
+}
+
+function calcChannel(ch) {
+  const model = getModelById(ch.modelId);
+  if (!model) return null;
+  const mc = calcModel(model);
+  const kwhPerMonth = model.kw * ch.hours;
+  const monthlyRev = ch.price * kwhPerMonth;
+  const monthlyElec = ch.buyPrice * kwhPerMonth;
+  const monthlyVarCost = monthlyElec + mc.monthlyFixed;
+  const monthlyMargin = monthlyRev - monthlyVarCost;
+  const marginRate = monthlyRev > 0 ? (monthlyMargin/monthlyRev*100) : 0;
+  let bepMonths;
+  if (monthlyMargin<=0) bepMonths=Infinity;
+  else if (mc.netInvest<=0) bepMonths=0;
+  else bepMonths=mc.netInvest/monthlyMargin;
+  return { model, mc, kwhPerMonth, monthlyRev, monthlyElec, monthlyVarCost, monthlyMargin, marginRate, bepMonths };
+}
+
+function calc5Year(ch) {
+  const m = calcChannel(ch);
+  if (!m) return null;
+  const { mc, monthlyRev, monthlyVarCost, monthlyMargin } = m;
+  const installs = ch.installs||[0,0,0,0,0];
+  let cumulUnits=0, cumulNet=0, bepYear=null;
+  const rows=[];
+  installs.forEach((newU,i)=>{
+    cumulUnits+=newU;
+    const yearInvest=newU*mc.netInvest;
+    const yearRev=cumulUnits*monthlyRev*12;
+    const yearVarCost=cumulUnits*monthlyVarCost*12;
+    const yearOpProfit=cumulUnits*monthlyMargin*12;
+    const yearNet=yearOpProfit-yearInvest;
+    cumulNet+=yearNet;
+    if(bepYear===null&&cumulNet>=0) bepYear=i+1;
+    rows.push({year:YEARS[i],newU,cumulUnits,yearInvest,yearRev,yearVarCost,yearOpProfit,yearNet,cumulNet,isBep:bepYear===i+1});
+  });
+  const totInst=installs.reduce((a,b)=>a+b,0);
+  const totRev=rows.reduce((a,r)=>a+r.yearRev,0);
+  const totOpProfit=rows.reduce((a,r)=>a+r.yearOpProfit,0);
+  const totInvest=rows.reduce((a,r)=>a+r.yearInvest,0);
+  return { rows, bepYear, totInst, totRev, totOpProfit, totInvest, cumulNet };
+}
+
+// =========================================================
+// NAVIGATION
+// =========================================================
+let activeTab='dashboard';
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  else { const tabs=document.querySelectorAll('.tab'); tabs.forEach(t=>{ if(t.getAttribute('onclick')&&t.getAttribute('onclick').includes("'"+name+"'")) t.classList.add('active'); }); }
+  document.getElementById('panel-'+name).classList.add('active');
+  activeTab=name;
+  if(name==='dashboard') renderDashboard();
+  if(name==='models') renderModels();
+  if(name==='channels') renderChannels();
+  if(name==='analysis') renderAnalysis(currentAnalysisTab);
+  if(name==='cost') initCostChart();
+}
+
+function switchAnalysis(name, btn) {
+  document.querySelectorAll('.inner-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.inner-panel').forEach(p=>p.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  document.getElementById('an-'+name).classList.add('active');
+  currentAnalysisTab=name;
+  renderAnalysis(name);
+}
+
+// =========================================================
+// RENDER DASHBOARD
+// =========================================================
+function renderDashboard() {
+  const total5yrInst = ST.channels.reduce((a,c)=>a+(c.installs||[0,0,0,0,0]).reduce((x,y)=>x+y,0),0);
+  const total5yrRev = ST.channels.reduce((a,c)=>{ const r=calc5Year(c); return a+(r?r.totRev:0); },0);
+  const total5yrProfit = ST.channels.reduce((a,c)=>{ const r=calc5Year(c); return a+(r?r.cumulNet:0); },0);
+
+  let html = `
+  <div class="grid-4" style="margin-bottom:24px">
+    <div class="kpi-card blue"><div class="kpi-label">등록 충전기 모델</div><div class="kpi-value">${ST.models.length}종</div><div class="kpi-sub">제조원가 기반 분석</div></div>
+    <div class="kpi-card cyan"><div class="kpi-label">등록 판매처</div><div class="kpi-value">${ST.channels.length}개</div><div class="kpi-sub">채널별 수익 분석</div></div>
+    <div class="kpi-card amber"><div class="kpi-label">5개년 총 설치 계획</div><div class="kpi-value">${fmtN(total5yrInst)}대</div><div class="kpi-sub">전체 판매처 합산</div></div>
+    <div class="kpi-card ${total5yrProfit>=0?'green':'red'}"><div class="kpi-label">5개년 누적 순손익</div><div class="kpi-value">${fmt(total5yrProfit)}</div><div class="kpi-sub">전체 포트폴리오</div></div>
+  </div>
+
+  <div class="section-header" style="margin-bottom:12px">
+    <div><div class="section-title">충전기 모델 현황</div></div>
+    <button class="btn-outline" style="font-size:12px;padding:6px 14px" onclick="switchTab('models',null)">전체 보기 →</button>
+  </div>
+  <div class="grid-auto" style="margin-bottom:28px">`;
+
+  if (ST.models.length===0) {
+    html+=`<div class="empty-state"><div class="empty-state-icon">⚡</div><div class="empty-state-text">등록된 모델이 없습니다</div><button class="btn-primary" onclick="switchTab('models',null)">모델 추가하기</button></div>`;
   } else {
-    const months = netInvest / unitMargin;
-    bepBanner.className  = 'bep-banner';
-    bepValue.textContent = months < 12 ? months.toFixed(1) + '개월' : (months / 12).toFixed(1) + '년';
-    bepSub.textContent   = `순투자 ${fmt(netInvest)} ÷ 월이익 ${fmt(unitMargin)}`;
+    ST.models.forEach(model=>{
+      const mc=calcModel(model);
+      const chUsing=ST.channels.filter(c=>c.modelId===model.id).length;
+      html+=`
+      <div class="item-card">
+        <div class="item-card-header">
+          <div><div class="item-card-name">${model.name}</div><div class="item-card-sub">${model.code} · ${model.kw}kW</div></div>
+          <span class="badge badge-blue">${chUsing}개 판매처</span>
+        </div>
+        <div class="item-metrics">
+          <div class="metric-item"><div class="metric-label">순 투자비/대</div><div class="metric-value ${mc.netInvest<=0?'green':'cyan'}">${fmt(mc.netInvest)}</div></div>
+          <div class="metric-item"><div class="metric-label">월 고정비/대</div><div class="metric-value neutral">${fmt(mc.monthlyFixed)}</div></div>
+          <div class="metric-item"><div class="metric-label">제조원가</div><div class="metric-value blue">${fmt(model.deviceCost)}</div></div>
+        </div>
+      </div>`;
+    });
   }
+  html+=`</div>
 
-  // ── 대당 누적 현금흐름 차트 (15년) ──
-  const totalMonths = 15 * 12;
-  const labels = [];
-  const cumulData = [];
-  let cumul = -netInvest;
+  <div class="section-header" style="margin-bottom:12px">
+    <div><div class="section-title">판매처 현황</div></div>
+    <button class="btn-outline" style="font-size:12px;padding:6px 14px" onclick="switchTab('channels',null)">전체 보기 →</button>
+  </div>
+  <div class="grid-auto">`;
 
-  for (let m = 0; m <= totalMonths; m++) {
-    if (m % 12 === 0) {
-      labels.push((m / 12) + '년차');
-      cumulData.push(Math.round(cumul));
-    }
-    cumul += unitMargin;
+  if (ST.channels.length===0) {
+    html+=`<div class="empty-state"><div class="empty-state-icon">🏪</div><div class="empty-state-text">등록된 판매처가 없습니다</div><button class="btn-primary" onclick="switchTab('channels',null)">판매처 추가하기</button></div>`;
+  } else {
+    ST.channels.forEach(ch=>{
+      const m=calcChannel(ch);
+      const five=calc5Year(ch);
+      const color=getColor(ch.colorIdx||0);
+      const typeBadge=CH_TYPE_BADGES[ch.type]||'badge-gray';
+      const typeLabel=CH_TYPES[ch.type]||ch.type;
+      const model=getModelById(ch.modelId);
+      html+=`
+      <div class="item-card" style="display:flex;gap:14px;padding:16px 18px">
+        <div style="width:4px;border-radius:4px;background:${color};flex-shrink:0;align-self:stretch"></div>
+        <div style="flex:1;min-width:0">
+          <div class="item-card-header" style="margin-bottom:10px">
+            <div><div class="item-card-name">${ch.name}</div><div class="item-card-sub">${model?model.name:'모델 없음'} · ${ch.price}원/kWh</div></div>
+            <span class="badge ${typeBadge}">${typeLabel}</span>
+          </div>
+          <div class="item-metrics" style="margin-bottom:10px">
+            <div class="metric-item"><div class="metric-label">월 기여이익/대</div><div class="metric-value ${m&&m.monthlyMargin>=0?'green':'red'}">${m?fmt(m.monthlyMargin):'-'}</div></div>
+            <div class="metric-item"><div class="metric-label">BEP</div><div class="metric-value ${m&&m.bepMonths<36?'green':'amber'}">${m?fmtBep(m.bepMonths):'-'}</div></div>
+            <div class="metric-item"><div class="metric-label">5년 누적 순손익</div><div class="metric-value ${five&&five.cumulNet>=0?'green':'red'}">${five?fmt(five.cumulNet):'-'}</div></div>
+          </div>
+          <div style="display:flex;gap:8px;font-size:11px;color:var(--text3)">
+            <span>설치계획: </span>
+            ${(ch.installs||[0,0,0,0,0]).map((v,i)=>`<span style="color:var(--text2)">${YEARS[i].slice(2)}: <b style="color:var(--accent2)">${v}</b></span>`).join('<span style="color:var(--border)">|</span>')}
+          </div>
+        </div>
+      </div>`;
+    });
   }
+  html+=`</div>`;
+  document.getElementById('dashboard-content').innerHTML=html;
+}
 
-  if (bepChart) bepChart.destroy();
-  bepChart = new Chart(document.getElementById('bepChart'), {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [{
-        label: '대당 누적 현금흐름',
-        data: cumulData,
-        borderColor: '#3b82f6',
-        backgroundColor: (ctx) => {
-          const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 280);
-          g.addColorStop(0, 'rgba(59,130,246,0.3)');
-          g.addColorStop(1, 'rgba(59,130,246,0.02)');
-          return g;
-        },
-        fill: true, tension: 0.4,
-        pointRadius: 4, pointHoverRadius: 6, borderWidth: 2.5,
-        pointBackgroundColor: cumulData.map(v => v >= 0 ? '#10b981' : '#ef4444'),
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: { callbacks: { label: ctx => ' ' + fmt(ctx.raw) } },
-      },
-      scales: {
-        x: { grid: { color: 'rgba(37,48,72,0.5)' }, ticks: { color: '#64748b', font: { size: 11 } } },
-        y: { grid: { color: 'rgba(37,48,72,0.5)' }, ticks: { color: '#64748b', font: { size: 11 }, callback: v => fmt(v) } },
-      }
-    }
-  });
+// =========================================================
+// RENDER MODELS
+// =========================================================
+function renderModels() {
+  let html='';
+  if(ST.models.length===0){
+    html=`<div class="card"><div class="empty-state"><div class="empty-state-icon">⚡</div><div class="empty-state-text">등록된 충전기 모델이 없습니다</div><div class="empty-state-sub">모델을 추가하면 제조원가 기반으로 투자비와 수익성을 분석합니다</div><button class="btn-primary" onclick="openModelModal(null)">＋ 첫 모델 추가</button></div></div>`;
+  } else {
+    html=`<div class="grid-auto">`;
+    ST.models.forEach(model=>{
+      const mc=calcModel(model);
+      const chUsing=ST.channels.filter(c=>c.modelId===model.id).length;
+      html+=`
+      <div class="item-card">
+        <div class="item-card-header">
+          <div>
+            <div class="item-card-name">${model.name}</div>
+            <div class="item-card-sub">${model.code} · ${model.kw}kW</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <span class="badge badge-gray">${chUsing}개 판매처</span>
+            <div class="item-card-actions">
+              <button class="btn-icon" onclick="openModelModal('${model.id}')" title="수정">✎</button>
+              <button class="btn-icon danger" onclick="deleteModel('${model.id}')" title="삭제">✕</button>
+            </div>
+          </div>
+        </div>
+        <div class="item-metrics">
+          <div class="metric-item"><div class="metric-label">제조원가 (VAT제외)</div><div class="metric-value blue">${fmtN(model.deviceCost)}원</div></div>
+          <div class="metric-item"><div class="metric-label">전기공사비</div><div class="metric-value neutral">${fmtN(model.elecCost)}원</div></div>
+          <div class="metric-item"><div class="metric-label">정부보조금</div><div class="metric-value green">-${fmtN(model.subsidy)}원</div></div>
+          <div class="metric-item"><div class="metric-label">순 투자비/대</div><div class="metric-value ${mc.netInvest<=0?'green':'cyan'}">${fmt(mc.netInvest)}</div></div>
+          <div class="metric-item"><div class="metric-label">월 고정운영비/대</div><div class="metric-value amber">${fmt(mc.monthlyFixed)}</div></div>
+          <div class="metric-item"><div class="metric-label">kW 출력</div><div class="metric-value neutral">${model.kw}kW</div></div>
+        </div>
+        <div class="divider" style="margin:10px 0"></div>
+        <div style="font-size:11px;color:var(--text3);display:flex;flex-wrap:wrap;gap:12px">
+          <span>유지보수: <b style="color:var(--text2)">${fmtN(model.maint)}원/월</b></span>
+          <span>임차료: <b style="color:var(--text2)">${fmtN(model.rent)}원/월</b></span>
+          <span>플랫폼: <b style="color:var(--text2)">${fmtN(model.platform)}원/월</b></span>
+          <span>인건비: <b style="color:var(--text2)">${fmtN(model.labor)}원/월</b></span>
+        </div>
+      </div>`;
+    });
+    html+=`</div>`;
+  }
+  document.getElementById('models-content').innerHTML=html;
+}
 
-  // 5개년이 열려 있으면 함께 갱신
-  if (document.getElementById('inner-5year').classList.contains('active')) {
-    update5year();
+// =========================================================
+// RENDER CHANNELS
+// =========================================================
+function renderChannels() {
+  let html='';
+  if(ST.channels.length===0){
+    html=`<div class="card"><div class="empty-state"><div class="empty-state-icon">🏪</div><div class="empty-state-text">등록된 판매처가 없습니다</div><div class="empty-state-sub">판매처를 추가하면 채널별 단가·사용량 기반으로 수익을 분석합니다</div><button class="btn-primary" onclick="openChannelModal(null)">＋ 첫 판매처 추가</button></div></div>`;
+  } else {
+    html=`<div style="display:flex;flex-direction:column;gap:16px">`;
+    ST.channels.forEach(ch=>{
+      const m=calcChannel(ch);
+      const color=getColor(ch.colorIdx||0);
+      const typeBadge=CH_TYPE_BADGES[ch.type]||'badge-gray';
+      const typeLabel=CH_TYPES[ch.type]||ch.type;
+      const model=getModelById(ch.modelId);
+      html+=`
+      <div class="item-card">
+        <div style="display:flex;gap:16px">
+          <div style="width:4px;border-radius:4px;background:${color};flex-shrink:0;align-self:stretch"></div>
+          <div style="flex:1;min-width:0">
+            <div class="item-card-header">
+              <div>
+                <div class="item-card-name">${ch.name}</div>
+                <div class="item-card-sub" style="margin-top:4px;display:flex;gap:8px;flex-wrap:wrap">
+                  <span class="badge ${typeBadge}">${typeLabel}</span>
+                  <span class="badge badge-gray">${model?model.name:'모델 미연결'}</span>
+                </div>
+              </div>
+              <div class="item-card-actions" style="flex-shrink:0">
+                <button class="btn-icon" onclick="openChannelModal('${ch.id}')" title="수정">✎</button>
+                <button class="btn-icon danger" onclick="deleteChannel('${ch.id}')" title="삭제">✕</button>
+              </div>
+            </div>
+
+            <div class="item-metrics" style="margin-bottom:14px">
+              <div class="metric-item"><div class="metric-label">판매단가</div><div class="metric-value cyan">${ch.price}원/kWh</div></div>
+              <div class="metric-item"><div class="metric-label">전기구매단가</div><div class="metric-value amber">${ch.buyPrice}원/kWh</div></div>
+              <div class="metric-item"><div class="metric-label">월 충전시간/대</div><div class="metric-value neutral">${ch.hours}h → ${m?Math.round(m.kwhPerMonth):0}kWh</div></div>
+              <div class="metric-item"><div class="metric-label">월 매출/대</div><div class="metric-value blue">${m?fmt(m.monthlyRev):'-'}</div></div>
+              <div class="metric-item"><div class="metric-label">월 기여이익/대</div><div class="metric-value ${m&&m.monthlyMargin>=0?'green':'red'}">${m?fmt(m.monthlyMargin):'-'}</div></div>
+              <div class="metric-item"><div class="metric-label">BEP</div><div class="metric-value ${m&&m.bepMonths<36?'green':m&&m.bepMonths<60?'amber':'red'}">${m?fmtBep(m.bepMonths):'-'}</div></div>
+            </div>
+
+            <div style="font-size:12px;color:var(--text2);font-weight:600;margin-bottom:8px">5개년 설치 계획 (신규 대수/년)</div>
+            <div class="install-mini-grid" id="install-grid-${ch.id}">
+              ${(ch.installs||[0,0,0,0,0]).map((v,i)=>`
+              <div class="install-mini">
+                <div class="install-mini-label">${YEARS[i]}</div>
+                <input type="number" value="${v}" min="0" max="9999"
+                  onchange="updateInstall('${ch.id}',${i},this.value)">
+                <div class="install-mini-sub">신규</div>
+              </div>`).join('')}
+            </div>
+          </div>
+        </div>
+      </div>`;
+    });
+    html+=`</div>`;
+  }
+  document.getElementById('channels-content').innerHTML=html;
+}
+
+function updateInstall(chId,yearIdx,val) {
+  const ch=getChannelById(chId);
+  if(!ch) return;
+  if(!ch.installs) ch.installs=[0,0,0,0,0];
+  ch.installs[yearIdx]=parseInt(val)||0;
+  saveState();
+  // update just the metrics in this card without full re-render
+  const m=calcChannel(ch);
+  const five=calc5Year(ch);
+  if(activeTab==='analysis') renderAnalysis(currentAnalysisTab);
+  if(activeTab==='dashboard') renderDashboard();
+}
+
+// =========================================================
+// RENDER ANALYSIS
+// =========================================================
+function renderAnalysis(tab) {
+  if(tab==='models') renderAnModels();
+  if(tab==='channels') renderAnChannels();
+  if(tab==='compare') renderAnCompare();
+  if(tab==='portfolio') renderAnPortfolio();
+}
+
+/* --- 모델별 분석 --- */
+function renderAnModels() {
+  const el=document.getElementById('an-models');
+  if(ST.models.length===0){
+    el.innerHTML=`<div class="empty-state"><div class="empty-state-icon">⚡</div><div class="empty-state-text">분석할 모델이 없습니다</div><button class="btn-primary" onclick="switchTab('models',null)">모델 추가</button></div>`;
+    return;
+  }
+  const selId = el.querySelector('.analysis-select')?.value || ST.models[0].id;
+  const opts=ST.models.map(m=>`<option value="${m.id}" ${m.id===selId?'selected':''}>${m.name}</option>`).join('');
+  el.innerHTML=`
+  <div class="analysis-bar">
+    <span class="analysis-label">분석 모델:</span>
+    <select class="analysis-select" onchange="renderAnModels()" id="sel-model">${opts}</select>
+  </div>
+  <div id="an-model-detail"></div>`;
+  const model=getModelById(document.getElementById('sel-model').value);
+  if(!model) return;
+  const mc=calcModel(model);
+  const usedChannels=ST.channels.filter(c=>c.modelId===model.id);
+
+  let detail=`
+  <div class="grid-3 mb-16">
+    <div class="kpi-card cyan"><div class="kpi-label">순 투자비/대</div><div class="kpi-value">${fmt(mc.netInvest)}</div><div class="kpi-sub">장치+공사-보조금</div></div>
+    <div class="kpi-card amber"><div class="kpi-label">월 고정운영비/대</div><div class="kpi-value">${fmt(mc.monthlyFixed)}</div><div class="kpi-sub">유지+임차+플랫폼+인건비</div></div>
+    <div class="kpi-card blue"><div class="kpi-label">연결 판매처</div><div class="kpi-value">${usedChannels.length}개</div><div class="kpi-sub">이 모델 사용 판매처</div></div>
+  </div>`;
+
+  if(usedChannels.length===0){
+    detail+=`<div class="card"><div class="empty-state"><div class="empty-state-text">이 모델을 사용하는 판매처가 없습니다</div><button class="btn-primary" onclick="openChannelModal(null)">판매처 추가</button></div></div>`;
+  } else {
+    detail+=`
+    <div class="grid-2">
+      <div class="card mb-16">
+        <div class="card-title">판매처별 BEP 비교</div>
+        <div class="chart-wrap"><canvas id="chart-an-model-bep"></canvas></div>
+      </div>
+      <div class="card mb-16">
+        <div class="card-title">판매처별 월 기여이익 비교</div>
+        <div class="chart-wrap"><canvas id="chart-an-model-margin"></canvas></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">판매처별 단위 수익 분석</div>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr>
+            <th>판매처</th><th>유형</th><th>단가(원/kWh)</th><th>월충전량</th>
+            <th>월매출/대</th><th>월전기비/대</th><th>월기여이익/대</th><th>마진율</th><th>BEP</th>
+          </tr></thead>
+          <tbody>`;
+    usedChannels.forEach(ch=>{
+      const cm=calcChannel(ch);
+      if(!cm) return;
+      const color=getColor(ch.colorIdx||0);
+      detail+=`<tr>
+        <td><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:${color};display:inline-block"></span>${ch.name}</span></td>
+        <td><span class="badge ${CH_TYPE_BADGES[ch.type]||'badge-gray'}">${CH_TYPES[ch.type]||ch.type}</span></td>
+        <td class="hl">${ch.price}원</td>
+        <td>${Math.round(cm.kwhPerMonth)}kWh</td>
+        <td>${fmt(cm.monthlyRev)}</td>
+        <td class="neg">${fmt(cm.monthlyElec)}</td>
+        <td class="${cm.monthlyMargin>=0?'pos':'neg'}">${fmt(cm.monthlyMargin)}</td>
+        <td class="${cm.marginRate>=20?'pos':cm.marginRate>=10?'hl':'neg'}">${cm.marginRate.toFixed(1)}%</td>
+        <td class="${cm.bepMonths<36?'pos':cm.bepMonths<60?'hl':'neg'}">${fmtBep(cm.bepMonths)}</td>
+      </tr>`;
+    });
+    detail+=`</tbody></table></div></div>`;
+  }
+  document.getElementById('an-model-detail').innerHTML=detail;
+
+  if(usedChannels.length>0){
+    const labels=usedChannels.map(c=>c.name);
+    const bepData=usedChannels.map(c=>{const m=calcChannel(c);return m&&isFinite(m.bepMonths)?parseFloat((m.bepMonths/12).toFixed(2)):null;});
+    const marginData=usedChannels.map(c=>{const m=calcChannel(c);return m?Math.round(m.monthlyMargin):0;});
+    const bgColors=usedChannels.map(c=>getColor(c.colorIdx||0));
+
+    destroyChart('chart-an-model-bep');
+    charts['chart-an-model-bep']=new Chart(document.getElementById('chart-an-model-bep'),{
+      type:'bar',
+      data:{labels,datasets:[{label:'BEP (년)',data:bepData,backgroundColor:bgColors,borderRadius:6}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` BEP: ${ctx.raw?ctx.raw+'년':'회수불가'}`}}},
+        scales:{x:{grid:{color:'rgba(37,48,72,.5)'},ticks:{color:'#64748b'}},y:{grid:{color:'rgba(37,48,72,.5)'},ticks:{color:'#64748b',callback:v=>v+'년'}}}}
+    });
+    destroyChart('chart-an-model-margin');
+    charts['chart-an-model-margin']=new Chart(document.getElementById('chart-an-model-margin'),{
+      type:'bar',
+      data:{labels,datasets:[{label:'월 기여이익/대 (원)',data:marginData,backgroundColor:bgColors,borderRadius:6}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.raw.toLocaleString()}원`}}},
+        scales:{x:{grid:{color:'rgba(37,48,72,.5)'},ticks:{color:'#64748b'}},y:{grid:{color:'rgba(37,48,72,.5)'},ticks:{color:'#64748b',callback:v=>fmt(v)}}}}
+    });
   }
 }
 
-// ==================== 5개년 시뮬레이션 ====================
-function update5year() {
-  const p = getParams();
-  const installs = [
-    +document.getElementById('y1').value,
-    +document.getElementById('y2').value,
-    +document.getElementById('y3').value,
-    +document.getElementById('y4').value,
-    +document.getElementById('y5').value,
-  ];
-  
-  const netInvestPerUnit = p.deviceCost + p.elecCost - p.subsidy;
-  const monthlyRevPerUnit = p.price * p.kwh;
-  const monthlyVarPerUnit = p.buyPrice * p.kwh + p.maint + p.rent + p.platform;
-  const monthlyMarginPerUnit = monthlyRevPerUnit - monthlyVarPerUnit;
-  
-  let cumulUnits = 0;
-  let cumulNet = 0;
-  let totalInvest5 = 0;
-  let totalRev5 = 0;
-  let totalOpProfit5 = 0;
-  
-  const rows = [];
-  const yearLabels = ['2026', '2027', '2028', '2029', '2030'];
-  const barRevData = [];
-  const barCostData = [];
-  const barOpData = [];
-  const lineData = [];
-  
-  let bepAchievedYear = null;
-  
-  installs.forEach((newUnits, i) => {
-    cumulUnits += newUnits;
-    const yearInvest = newUnits * netInvestPerUnit;
-    const yearRev = cumulUnits * monthlyRevPerUnit * 12;
-    const yearVarCost = cumulUnits * monthlyVarPerUnit * 12;
-    const yearOpProfit = cumulUnits * monthlyMarginPerUnit * 12;
-    const yearNet = yearOpProfit - yearInvest;
-    cumulNet += yearNet;
-    
-    totalInvest5 += yearInvest;
-    totalRev5 += yearRev;
-    totalOpProfit5 += yearOpProfit;
-    
-    if (bepAchievedYear === null && cumulNet >= 0) bepAchievedYear = i + 1;
-    
-    rows.push({ year: yearLabels[i], newUnits, cumulUnits, yearInvest, yearRev, yearVarCost, yearOpProfit, yearNet, cumulNet, isBep: bepAchievedYear === i+1 });
-    barRevData.push(yearRev);
-    barCostData.push(yearVarCost);
-    barOpData.push(yearOpProfit);
-    lineData.push(cumulNet);
-  });
-  
-  const totalUnits5 = installs.reduce((a,b)=>a+b,0);
-  
-  // KPI
-  document.getElementById('y5-total-units').textContent = totalUnits5.toLocaleString() + '대';
-  document.getElementById('y5-total-rev').textContent = fmt(totalRev5);
-  document.getElementById('y5-total-profit').textContent = fmt(totalOpProfit5);
-  document.getElementById('y5-total-invest').textContent = fmt(totalInvest5);
-  document.getElementById('y5-total-net').textContent = fmt(cumulNet);
-  document.getElementById('y5-end-units').textContent = (installs.reduce((a,b)=>a+b,0)).toLocaleString() + '대';
-  
-  // 테이블
-  const tbody = document.getElementById('five-year-tbody');
-  tbody.innerHTML = rows.map(r => `
-    <tr class="${r.isBep ? 'bep-row' : ''}">
-      <td>${r.year} ${r.isBep ? '<span class="year-badge">BEP</span>' : ''}</td>
-      <td>${r.newUnits.toLocaleString()}대</td>
+/* --- 판매처별 분석 --- */
+function renderAnChannels() {
+  const el=document.getElementById('an-channels');
+  if(ST.channels.length===0){
+    el.innerHTML=`<div class="empty-state"><div class="empty-state-icon">🏪</div><div class="empty-state-text">분석할 판매처가 없습니다</div><button class="btn-primary" onclick="switchTab('channels',null)">판매처 추가</button></div>`;
+    return;
+  }
+  const selId = el.querySelector('.analysis-select')?.value || ST.channels[0].id;
+  const opts=ST.channels.map(c=>`<option value="${c.id}" ${c.id===selId?'selected':''}>${c.name}</option>`).join('');
+  el.innerHTML=`
+  <div class="analysis-bar">
+    <span class="analysis-label">분석 판매처:</span>
+    <select class="analysis-select" onchange="renderAnChannels()" id="sel-channel">${opts}</select>
+  </div>
+  <div id="an-ch-detail"></div>`;
+
+  const ch=getChannelById(document.getElementById('sel-channel').value);
+  if(!ch) return;
+  const cm=calcChannel(ch);
+  const five=calc5Year(ch);
+  const color=getColor(ch.colorIdx||0);
+  const model=getModelById(ch.modelId);
+  if(!cm||!five){ document.getElementById('an-ch-detail').innerHTML=`<div class="card"><p style="color:var(--text3)">연결된 모델이 없습니다. 판매처를 수정하여 모델을 연결해주세요.</p></div>`; return; }
+
+  const bepClass=cm.bepMonths<=0?'instant':!isFinite(cm.bepMonths)?'loss':'';
+  let detail=`
+  <div class="bep-banner ${bepClass}">
+    <div><div class="bep-text">대당 투자 회수기간 (BEP)</div><div class="bep-sub">${model?model.name:''} 기준 | 순투자 ${fmt(cm.mc.netInvest)} ÷ 월이익 ${fmt(cm.monthlyMargin)}</div></div>
+    <div class="bep-value">${fmtBep(cm.bepMonths)}</div>
+  </div>
+  <div class="grid-3 mb-16">
+    <div class="kpi-card blue"><div class="kpi-label">대당 월 매출</div><div class="kpi-value">${fmt(cm.monthlyRev)}</div><div class="kpi-sub">${Math.round(cm.kwhPerMonth)}kWh × ${ch.price}원</div></div>
+    <div class="kpi-card green"><div class="kpi-label">대당 월 기여이익</div><div class="kpi-value">${fmt(cm.monthlyMargin)}</div><div class="kpi-sub">마진율 ${cm.marginRate.toFixed(1)}%</div></div>
+    <div class="kpi-card amber"><div class="kpi-label">대당 순 투자비</div><div class="kpi-value">${fmt(cm.mc.netInvest)}</div><div class="kpi-sub">장치+공사-보조금</div></div>
+  </div>
+  <div class="grid-3 mb-16">
+    <div class="kpi-card cyan"><div class="kpi-label">5년 누적 설치</div><div class="kpi-value">${fmtN(five.totInst)}대</div><div class="kpi-sub">총 설치 계획</div></div>
+    <div class="kpi-card blue"><div class="kpi-label">5년 총 매출</div><div class="kpi-value">${fmt(five.totRev)}</div><div class="kpi-sub">운영 수익 합계</div></div>
+    <div class="kpi-card ${five.cumulNet>=0?'green':'red'}"><div class="kpi-label">5년 누적 순손익</div><div class="kpi-value">${fmt(five.cumulNet)}</div><div class="kpi-sub">영업이익-투자</div></div>
+  </div>
+
+  <div class="card mb-20">
+    <div class="card-title">대당 누적 현금흐름 (15년)</div>
+    <div class="chart-wrap"><canvas id="chart-an-ch-bep"></canvas></div>
+  </div>
+
+  <div class="card mb-20">
+    <div class="card-title">연도별 손익 상세</div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>연도</th><th>신규설치</th><th>누적운영</th><th>설치투자액</th><th>연간매출</th><th>연간변동비</th><th>영업이익</th><th>당기순손익</th><th>누적순손익</th><th>상태</th></tr></thead>
+        <tbody>`;
+  five.rows.forEach(r=>{
+    detail+=`<tr class="${r.isBep?'bep-row':''}">
+      <td>${r.year} ${r.isBep?'<span class="year-badge">BEP</span>':''}</td>
+      <td>${r.newU.toLocaleString()}대</td>
       <td>${r.cumulUnits.toLocaleString()}대</td>
       <td class="neg">${fmt(r.yearInvest)}</td>
-      <td>${fmt(r.yearRev)}</td>
+      <td class="hl">${fmt(r.yearRev)}</td>
       <td class="neg">${fmt(r.yearVarCost)}</td>
-      <td class="${r.yearOpProfit >= 0 ? 'pos' : 'neg'}">${fmt(r.yearOpProfit)}</td>
-      <td class="${r.yearNet >= 0 ? 'pos' : 'neg'}">${fmt(r.yearNet)}</td>
-      <td class="${r.cumulNet >= 0 ? 'pos' : 'neg'}">${fmt(r.cumulNet)}</td>
-      <td>${r.cumulNet >= 0 ? '<span class="pill pill-green">흑자</span>' : '<span class="pill pill-red">적자</span>'}</td>
-    </tr>
-  `).join('') + `
-    <tr class="total-row">
-      <td>합계</td>
-      <td>${totalUnits5.toLocaleString()}대</td>
-      <td>-</td>
-      <td class="neg">${fmt(totalInvest5)}</td>
-      <td>${fmt(totalRev5)}</td>
-      <td class="neg">${fmt(rows.reduce((a,r)=>a+r.yearVarCost,0))}</td>
-      <td class="${totalOpProfit5>=0?'pos':'neg'}">${fmt(totalOpProfit5)}</td>
-      <td>-</td>
-      <td class="${cumulNet>=0?'pos':'neg'}">${fmt(cumulNet)}</td>
-      <td>${cumulNet>=0?'<span class="pill pill-green">흑자</span>':'<span class="pill pill-red">적자</span>'}</td>
-    </tr>
-  `;
-  
-  // 차트
-  if (chart5yearBar) chart5yearBar.destroy();
-  chart5yearBar = new Chart(document.getElementById('chart5yearBar'), {
-    type: 'bar',
-    data: {
-      labels: yearLabels,
-      datasets: [
-        { label: '연간매출', data: barRevData, backgroundColor: 'rgba(59,130,246,0.7)', borderRadius: 4 },
-        { label: '변동비', data: barCostData, backgroundColor: 'rgba(239,68,68,0.5)', borderRadius: 4 },
-        { label: '영업이익', data: barOpData, backgroundColor: 'rgba(16,185,129,0.7)', borderRadius: 4 },
-      ]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { labels: { color: '#94a3b8', font: { size: 11 } } }, tooltip: { callbacks: { label: ctx => ' ' + fmt(ctx.raw) } } },
-      scales: {
-        x: { grid: { color: 'rgba(37,48,72,0.5)' }, ticks: { color: '#64748b' } },
-        y: { grid: { color: 'rgba(37,48,72,0.5)' }, ticks: { color: '#64748b', callback: v => fmt(v) } }
-      }
-    }
+      <td class="${r.yearOpProfit>=0?'pos':'neg'}">${fmt(r.yearOpProfit)}</td>
+      <td class="${r.yearNet>=0?'pos':'neg'}">${fmt(r.yearNet)}</td>
+      <td class="${r.cumulNet>=0?'pos':'neg'}">${fmt(r.cumulNet)}</td>
+      <td>${r.cumulNet>=0?'<span class="pill pill-green">흑자</span>':'<span class="pill pill-red">적자</span>'}</td>
+    </tr>`;
   });
-  
-  if (chart5yearLine) chart5yearLine.destroy();
-  chart5yearLine = new Chart(document.getElementById('chart5yearLine'), {
-    type: 'line',
-    data: {
-      labels: yearLabels,
-      datasets: [{
-        label: '누적 순손익',
-        data: lineData,
-        borderColor: lineData[lineData.length-1] >= 0 ? '#10b981' : '#ef4444',
-        backgroundColor: lineData[lineData.length-1] >= 0 ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
-        fill: true,
-        tension: 0.4,
-        borderWidth: 2.5,
-        pointBackgroundColor: lineData.map(v => v >= 0 ? '#10b981' : '#ef4444'),
-        pointRadius: 5,
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: { callbacks: { label: ctx => ' ' + fmt(ctx.raw) } }
-      },
-      scales: {
-        x: { grid: { color: 'rgba(37,48,72,0.5)' }, ticks: { color: '#64748b' } },
-        y: {
-          grid: { color: 'rgba(37,48,72,0.5)' },
-          ticks: { color: '#64748b', callback: v => fmt(v) },
-        }
-      }
-    }
+  const totVarCost=five.rows.reduce((a,r)=>a+r.yearVarCost,0);
+  detail+=`<tr class="total-row">
+    <td>합계</td><td>${fmtN(five.totInst)}대</td><td>-</td><td class="neg">${fmt(five.totInvest)}</td>
+    <td class="hl">${fmt(five.totRev)}</td><td class="neg">${fmt(totVarCost)}</td>
+    <td class="${five.totOpProfit>=0?'pos':'neg'}">${fmt(five.totOpProfit)}</td><td>-</td>
+    <td class="${five.cumulNet>=0?'pos':'neg'}">${fmt(five.cumulNet)}</td>
+    <td>${five.cumulNet>=0?'<span class="pill pill-green">흑자</span>':'<span class="pill pill-red">적자</span>'}</td>
+  </tr>`;
+  detail+=`</tbody></table></div></div>
+
+  <div class="grid-2">
+    <div class="card"><div class="card-title">연도별 매출 / 비용 / 이익</div><div class="chart-wrap"><canvas id="chart-an-ch-bar"></canvas></div></div>
+    <div class="card"><div class="card-title">누적 순손익 추이</div><div class="chart-wrap"><canvas id="chart-an-ch-line"></canvas></div></div>
+  </div>`;
+
+  document.getElementById('an-ch-detail').innerHTML=detail;
+
+  // BEP 15yr chart
+  const netInvest=cm.mc.netInvest;
+  const totalMonths=15*12;
+  const bepLabels=[],bepData=[];
+  let cumul=-netInvest;
+  for(let m2=0;m2<=totalMonths;m2++){
+    if(m2%12===0){bepLabels.push((m2/12)+'년차');bepData.push(Math.round(cumul));}
+    cumul+=cm.monthlyMargin;
+  }
+  destroyChart('chart-an-ch-bep');
+  charts['chart-an-ch-bep']=new Chart(document.getElementById('chart-an-ch-bep'),{
+    type:'line',data:{labels:bepLabels,datasets:[{label:'누적현금흐름',data:bepData,borderColor:color,
+      backgroundColor:ctx=>{const g=ctx.chart.ctx.createLinearGradient(0,0,0,280);g.addColorStop(0,color+'55');g.addColorStop(1,color+'05');return g;},
+      fill:true,tension:.4,pointRadius:4,borderWidth:2.5,pointBackgroundColor:bepData.map(v=>v>=0?'#10b981':'#ef4444')}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+fmt(ctx.raw)}}},
+      scales:{x:{grid:{color:'rgba(37,48,72,.5)'},ticks:{color:'#64748b',font:{size:11}}},
+              y:{grid:{color:'rgba(37,48,72,.5)'},ticks:{color:'#64748b',callback:v=>fmt(v)}}}}
+  });
+
+  // Bar chart
+  const barLabels=YEARS;
+  const revData=five.rows.map(r=>r.yearRev);
+  const costData=five.rows.map(r=>r.yearVarCost);
+  const profitData=five.rows.map(r=>r.yearOpProfit);
+  destroyChart('chart-an-ch-bar');
+  charts['chart-an-ch-bar']=new Chart(document.getElementById('chart-an-ch-bar'),{
+    type:'bar',data:{labels:barLabels,datasets:[
+      {label:'연간매출',data:revData,backgroundColor:'rgba(59,130,246,.7)',borderRadius:4},
+      {label:'변동비',data:costData,backgroundColor:'rgba(239,68,68,.5)',borderRadius:4},
+      {label:'영업이익',data:profitData,backgroundColor:color+'cc',borderRadius:4},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#94a3b8',font:{size:11}}},tooltip:{callbacks:{label:ctx=>' '+fmt(ctx.raw)}}},
+      scales:{x:{grid:{color:'rgba(37,48,72,.5)'},ticks:{color:'#64748b'}},y:{grid:{color:'rgba(37,48,72,.5)'},ticks:{color:'#64748b',callback:v=>fmt(v)}}}}
+  });
+
+  // Line chart
+  const lineData=five.rows.map(r=>r.cumulNet);
+  const lineColor=five.cumulNet>=0?'#10b981':'#ef4444';
+  destroyChart('chart-an-ch-line');
+  charts['chart-an-ch-line']=new Chart(document.getElementById('chart-an-ch-line'),{
+    type:'line',data:{labels:barLabels,datasets:[{label:'누적순손익',data:lineData,
+      borderColor:lineColor,backgroundColor:lineColor+'22',fill:true,tension:.4,borderWidth:2.5,
+      pointBackgroundColor:lineData.map(v=>v>=0?'#10b981':'#ef4444'),pointRadius:5}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+fmt(ctx.raw)}}},
+      scales:{x:{grid:{color:'rgba(37,48,72,.5)'},ticks:{color:'#64748b'}},y:{grid:{color:'rgba(37,48,72,.5)'},ticks:{color:'#64748b',callback:v=>fmt(v)}}}}
   });
 }
 
-// ==================== 원가 파이 차트 ====================
-function initCostChart() {
-  if (costPieChart) return;
-  costPieChart = new Chart(document.getElementById('costPieChart'), {
-    type: 'doughnut',
-    data: {
-      labels: ['직접재료비', '외주가공비', '노무비', '일반관리비', '이윤', '기타경비'],
-      datasets: [{
-        data: [518861, 94621, 55941, 56620, 11239, 138796],
-        backgroundColor: ['#3b82f6','#22d3ee','#10b981','#f59e0b','#8b5cf6','#64748b'],
-        borderColor: '#161d2e',
-        borderWidth: 2,
-        hoverOffset: 8,
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: 'bottom',
-          labels: { color: '#94a3b8', font: { size: 11 }, padding: 12 }
-        },
-        tooltip: {
-          callbacks: {
-            label: ctx => ` ${ctx.label}: ${ctx.raw.toLocaleString()}원 (${((ctx.raw/876078)*100).toFixed(1)}%)`
-          }
-        }
-      }
-    }
+/* --- 비교 분석 --- */
+function renderAnCompare() {
+  const el=document.getElementById('an-compare');
+  if(ST.channels.length===0){
+    el.innerHTML=`<div class="empty-state"><div class="empty-state-icon">⚖️</div><div class="empty-state-text">비교할 판매처가 없습니다</div></div>`;
+    return;
+  }
+  const rows=ST.channels.map(ch=>{
+    const cm=calcChannel(ch);
+    const five=calc5Year(ch);
+    const model=getModelById(ch.modelId);
+    return {ch,cm,five,model};
+  }).filter(r=>r.cm&&r.five);
+
+  let html=`
+  <div class="grid-2 mb-20">
+    <div class="card">
+      <div class="card-title">판매처별 BEP 비교</div>
+      <div class="chart-wrap"><canvas id="chart-cmp-bep"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">판매처별 5년 누적 순손익</div>
+      <div class="chart-wrap"><canvas id="chart-cmp-net"></canvas></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">전체 판매처 비교표</div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr>
+          <th>판매처</th><th>유형</th><th>모델</th>
+          <th>판매단가</th><th>월충전량/대</th><th>월기여이익/대</th><th>마진율</th>
+          <th>BEP</th><th>5년설치</th><th>5년매출</th><th>5년순손익</th>
+        </tr></thead>
+        <tbody>`;
+  rows.forEach(({ch,cm,five,model})=>{
+    const color=getColor(ch.colorIdx||0);
+    html+=`<tr>
+      <td><span style="display:inline-flex;align-items:center;gap:7px"><span style="width:10px;height:10px;border-radius:50%;background:${color};flex-shrink:0"></span>${ch.name}</span></td>
+      <td><span class="badge ${CH_TYPE_BADGES[ch.type]||'badge-gray'}">${CH_TYPES[ch.type]||ch.type}</span></td>
+      <td style="color:var(--text2)">${model?model.name:'-'}</td>
+      <td class="hl">${ch.price}원/kWh</td>
+      <td>${Math.round(cm.kwhPerMonth)}kWh</td>
+      <td class="${cm.monthlyMargin>=0?'pos':'neg'}">${fmt(cm.monthlyMargin)}</td>
+      <td class="${cm.marginRate>=20?'pos':cm.marginRate>=10?'hl':'neg'}">${cm.marginRate.toFixed(1)}%</td>
+      <td class="${cm.bepMonths<36?'pos':cm.bepMonths<60?'hl':'neg'}">${fmtBep(cm.bepMonths)}</td>
+      <td>${fmtN(five.totInst)}대</td>
+      <td class="hl">${fmt(five.totRev)}</td>
+      <td class="${five.cumulNet>=0?'pos':'neg'}">${fmt(five.cumulNet)}</td>
+    </tr>`;
+  });
+  html+=`</tbody></table></div></div>`;
+  el.innerHTML=html;
+
+  const labels=rows.map(r=>r.ch.name);
+  const colors=rows.map(r=>getColor(r.ch.colorIdx||0));
+  const bepVals=rows.map(r=>r.cm&&isFinite(r.cm.bepMonths)?parseFloat((r.cm.bepMonths/12).toFixed(2)):null);
+  const netVals=rows.map(r=>r.five?r.five.cumulNet:0);
+
+  destroyChart('chart-cmp-bep');
+  charts['chart-cmp-bep']=new Chart(document.getElementById('chart-cmp-bep'),{
+    type:'bar',data:{labels,datasets:[{label:'BEP (년)',data:bepVals,backgroundColor:colors,borderRadius:6}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` BEP: ${ctx.raw?ctx.raw+'년':'회수불가'}`}}},
+      scales:{x:{grid:{color:'rgba(37,48,72,.5)'},ticks:{color:'#64748b',callback:v=>v+'년'}},y:{grid:{color:'rgba(37,48,72,.5)'},ticks:{color:'#94a3b8'}}}}
+  });
+  destroyChart('chart-cmp-net');
+  charts['chart-cmp-net']=new Chart(document.getElementById('chart-cmp-net'),{
+    type:'bar',data:{labels,datasets:[{label:'5년 누적 순손익',data:netVals,backgroundColor:netVals.map((v,i)=>v>=0?colors[i]:colors[i]+'88'),borderRadius:6}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${fmt(ctx.raw)}`}}},
+      scales:{x:{grid:{color:'rgba(37,48,72,.5)'},ticks:{color:'#64748b',callback:v=>fmt(v)}},y:{grid:{color:'rgba(37,48,72,.5)'},ticks:{color:'#94a3b8'}}}}
   });
 }
 
-// ==================== 저장 / 불러오기 ====================
-function saveSettings() {
-  const btn = document.getElementById('btn-save');
-  const status = document.getElementById('save-status');
+/* --- 포트폴리오 --- */
+function renderAnPortfolio() {
+  const el=document.getElementById('an-portfolio');
+  if(ST.channels.length===0){
+    el.innerHTML=`<div class="empty-state"><div class="empty-state-icon">🗂️</div><div class="empty-state-text">분석할 판매처가 없습니다</div></div>`;
+    return;
+  }
+  // Aggregate 5yr across all channels
+  let aggRev=[0,0,0,0,0],aggCost=[0,0,0,0,0],aggProfit=[0,0,0,0,0],aggInvest=[0,0,0,0,0];
+  let aggCumulNet=[0,0,0,0,0],aggInstalls=[0,0,0,0,0],aggCumUnits=[0,0,0,0,0];
+  let portfolioCumNet=0;
+  const validChannels=[];
+  ST.channels.forEach(ch=>{
+    const five=calc5Year(ch);
+    if(!five) return;
+    validChannels.push(ch);
+    five.rows.forEach((r,i)=>{
+      aggRev[i]+=r.yearRev;
+      aggCost[i]+=r.yearVarCost;
+      aggProfit[i]+=r.yearOpProfit;
+      aggInvest[i]+=r.yearInvest;
+      aggInstalls[i]+=r.newU;
+      aggCumUnits[i]+=r.cumulUnits;
+    });
+  });
+  let runNet=0;
+  aggCumulNet=aggProfit.map((p,i)=>{runNet+=p-aggInvest[i];return runNet;});
+  portfolioCumNet=runNet;
+  const totRev=aggRev.reduce((a,b)=>a+b,0);
+  const totProfit=aggProfit.reduce((a,b)=>a+b,0);
+  const totInvest=aggInvest.reduce((a,b)=>a+b,0);
+  const totInst=aggInstalls.reduce((a,b)=>a+b,0);
 
-  const data = {
-    deviceCost: document.getElementById('s-device-cost').value,
-    elecCost:   document.getElementById('s-elec-cost').value,
-    subsidy:    document.getElementById('s-subsidy').value,
-    maint:      document.getElementById('s-maint').value,
-    rent:       document.getElementById('s-rent').value,
-    platform:   document.getElementById('s-platform').value,
-    labor:      document.getElementById('s-labor').value,
-    price:      document.getElementById('s-price').value,
-    buyPrice:   document.getElementById('s-buy-price').value,
-    hours:      document.getElementById('s-hours').value,
-    y1: document.getElementById('y1').value,
-    y2: document.getElementById('y2').value,
-    y3: document.getElementById('y3').value,
-    y4: document.getElementById('y4').value,
-    y5: document.getElementById('y5').value,
-    savedAt: new Date().toLocaleString('ko-KR')
+  let bepYear=null;
+  aggCumulNet.forEach((v,i)=>{ if(bepYear===null&&v>=0) bepYear=i+1; });
+
+  let html=`
+  <div class="grid-4 mb-20">
+    <div class="kpi-card blue"><div class="kpi-label">판매처 수</div><div class="kpi-value">${validChannels.length}개</div><div class="kpi-sub">포트폴리오 구성</div></div>
+    <div class="kpi-card amber"><div class="kpi-label">5년 총 설치</div><div class="kpi-value">${fmtN(totInst)}대</div><div class="kpi-sub">전체 판매처 합산</div></div>
+    <div class="kpi-card cyan"><div class="kpi-label">5년 총 매출</div><div class="kpi-value">${fmt(totRev)}</div><div class="kpi-sub">전체 판매처 합산</div></div>
+    <div class="kpi-card ${portfolioCumNet>=0?'green':'red'}"><div class="kpi-label">5년 누적 순손익</div><div class="kpi-value">${fmt(portfolioCumNet)}</div><div class="kpi-sub">${bepYear?bepYear+'년차 BEP 달성':'BEP 미달성'}</div></div>
+  </div>
+
+  <div class="grid-2 mb-20">
+    <div class="card"><div class="card-title">연도별 포트폴리오 매출·이익</div><div class="chart-wrap-lg"><canvas id="chart-pf-bar"></canvas></div></div>
+    <div class="card"><div class="card-title">누적 순손익 추이</div><div class="chart-wrap-lg"><canvas id="chart-pf-line"></canvas></div></div>
+  </div>
+
+  <div class="card mb-20">
+    <div class="card-title">판매처별 5년 연간 매출 구성</div>
+    <div class="chart-wrap-lg"><canvas id="chart-pf-stack"></canvas></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">포트폴리오 연도별 요약</div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>연도</th><th>신규설치</th><th>누적운영</th><th>총 투자액</th><th>총 매출</th><th>총 변동비</th><th>영업이익</th><th>당기순손익</th><th>누적순손익</th><th>상태</th></tr></thead>
+        <tbody>`;
+  YEARS.forEach((yr,i)=>{
+    const yearNet=aggProfit[i]-aggInvest[i];
+    html+=`<tr class="${aggCumulNet[i]>=0&&(i===0||aggCumulNet[i-1]<0)?'bep-row':''}">
+      <td>${yr} ${aggCumulNet[i]>=0&&(i===0||aggCumulNet[i-1]<0)?'<span class="year-badge">BEP</span>':''}</td>
+      <td>${fmtN(aggInstalls[i])}대</td>
+      <td>${fmtN(aggCumUnits[i])}대</td>
+      <td class="neg">${fmt(aggInvest[i])}</td>
+      <td class="hl">${fmt(aggRev[i])}</td>
+      <td class="neg">${fmt(aggCost[i])}</td>
+      <td class="${aggProfit[i]>=0?'pos':'neg'}">${fmt(aggProfit[i])}</td>
+      <td class="${yearNet>=0?'pos':'neg'}">${fmt(yearNet)}</td>
+      <td class="${aggCumulNet[i]>=0?'pos':'neg'}">${fmt(aggCumulNet[i])}</td>
+      <td>${aggCumulNet[i]>=0?'<span class="pill pill-green">흑자</span>':'<span class="pill pill-red">적자</span>'}</td>
+    </tr>`;
+  });
+  html+=`<tr class="total-row">
+    <td>합계</td><td>${fmtN(totInst)}대</td><td>-</td><td class="neg">${fmt(totInvest)}</td>
+    <td class="hl">${fmt(totRev)}</td><td class="neg">${fmt(aggCost.reduce((a,b)=>a+b,0))}</td>
+    <td class="${totProfit>=0?'pos':'neg'}">${fmt(totProfit)}</td><td>-</td>
+    <td class="${portfolioCumNet>=0?'pos':'neg'}">${fmt(portfolioCumNet)}</td>
+    <td>${portfolioCumNet>=0?'<span class="pill pill-green">흑자</span>':'<span class="pill pill-red">적자</span>'}</td>
+  </tr>`;
+  html+=`</tbody></table></div></div>`;
+  el.innerHTML=html;
+
+  // Bar chart
+  destroyChart('chart-pf-bar');
+  charts['chart-pf-bar']=new Chart(document.getElementById('chart-pf-bar'),{
+    type:'bar',data:{labels:YEARS,datasets:[
+      {label:'총 매출',data:aggRev,backgroundColor:'rgba(59,130,246,.7)',borderRadius:4},
+      {label:'총 변동비',data:aggCost,backgroundColor:'rgba(239,68,68,.5)',borderRadius:4},
+      {label:'영업이익',data:aggProfit,backgroundColor:'rgba(16,185,129,.7)',borderRadius:4},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#94a3b8',font:{size:11}}},tooltip:{callbacks:{label:ctx=>' '+fmt(ctx.raw)}}},
+      scales:{x:{grid:{color:'rgba(37,48,72,.5)'},ticks:{color:'#64748b'}},y:{grid:{color:'rgba(37,48,72,.5)'},ticks:{color:'#64748b',callback:v=>fmt(v)}}}}
+  });
+  // Line chart
+  const lineColor=portfolioCumNet>=0?'#10b981':'#ef4444';
+  destroyChart('chart-pf-line');
+  charts['chart-pf-line']=new Chart(document.getElementById('chart-pf-line'),{
+    type:'line',data:{labels:YEARS,datasets:[{label:'누적순손익',data:aggCumulNet,
+      borderColor:lineColor,backgroundColor:lineColor+'22',fill:true,tension:.4,borderWidth:2.5,
+      pointBackgroundColor:aggCumulNet.map(v=>v>=0?'#10b981':'#ef4444'),pointRadius:5}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+fmt(ctx.raw)}}},
+      scales:{x:{grid:{color:'rgba(37,48,72,.5)'},ticks:{color:'#64748b'}},y:{grid:{color:'rgba(37,48,72,.5)'},ticks:{color:'#64748b',callback:v=>fmt(v)}}}}
+  });
+  // Stacked bar chart (per channel)
+  const stackDatasets=validChannels.map(ch=>{
+    const five=calc5Year(ch);
+    return {label:ch.name,data:five?five.rows.map(r=>r.yearRev):[0,0,0,0,0],backgroundColor:getColor(ch.colorIdx||0)+'cc',borderRadius:2};
+  });
+  destroyChart('chart-pf-stack');
+  charts['chart-pf-stack']=new Chart(document.getElementById('chart-pf-stack'),{
+    type:'bar',data:{labels:YEARS,datasets:stackDatasets},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#94a3b8',font:{size:11}}},tooltip:{callbacks:{label:ctx=>' '+fmt(ctx.raw)}}},
+      scales:{x:{stacked:true,grid:{color:'rgba(37,48,72,.5)'},ticks:{color:'#64748b'}},y:{stacked:true,grid:{color:'rgba(37,48,72,.5)'},ticks:{color:'#64748b',callback:v=>fmt(v)}}}}
+  });
+}
+
+// =========================================================
+// MODAL - MODEL
+// =========================================================
+function openModelModal(id) {
+  editingModelId=id;
+  const model=id?getModelById(id):{id:null,name:'',code:'',kw:7,deviceCost:876000,elecCost:870000,subsidy:2000000,maint:25000,rent:15000,platform:5000,labor:20000};
+  if(!model&&id) return;
+  document.getElementById('modal-body').innerHTML=`
+  <div class="modal-title">⚡ ${id?'모델 수정':'새 모델 추가'}</div>
+  <div class="form-section">기본 정보</div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">모델명</label><input class="form-input" id="m-name" placeholder="예: OASIS 7kW V11" value="${model.name||''}"></div>
+    <div class="form-group"><label class="form-label">모델 코드</label><input class="form-input" id="m-code" placeholder="예: BSS007K-V11-J" value="${model.code||''}"></div>
+  </div>
+  <div class="form-group" style="max-width:200px"><label class="form-label">출력 (kW)</label><input class="form-input" id="m-kw" type="number" min="1" max="350" value="${model.kw||7}"><div class="form-hint">충전기 출력 (예: 7, 50, 100)</div></div>
+  <div class="form-section">투자 비용</div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">제조원가 / VAT 제외 (원)</label><input class="form-input" id="m-device" type="number" value="${model.deviceCost}"></div>
+    <div class="form-group"><label class="form-label">전기공사비 (원)</label><input class="form-input" id="m-elec" type="number" value="${model.elecCost}"></div>
+  </div>
+  <div class="form-group" style="max-width:280px"><label class="form-label">정부보조금 수령액 (원)</label><input class="form-input" id="m-sub" type="number" value="${model.subsidy}"></div>
+  <div class="form-section">월 운영 고정비 (대당)</div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">유지보수비 (원/월)</label><input class="form-input" id="m-maint" type="number" value="${model.maint}"></div>
+    <div class="form-group"><label class="form-label">부지 임차료 (원/월)</label><input class="form-input" id="m-rent" type="number" value="${model.rent}"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">플랫폼/통신비 (원/월)</label><input class="form-input" id="m-platform" type="number" value="${model.platform}"></div>
+    <div class="form-group"><label class="form-label">인건비 배분 (원/월)</label><input class="form-input" id="m-labor" type="number" value="${model.labor}"></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn-outline" onclick="closeModal()">취소</button>
+    <button class="btn-primary" onclick="saveModel()">저장</button>
+  </div>`;
+  document.getElementById('modal-overlay').style.display='flex';
+}
+
+function saveModel() {
+  const name=document.getElementById('m-name').value.trim();
+  if(!name){alert('모델명을 입력해주세요.');return;}
+  const data={
+    name,
+    code:document.getElementById('m-code').value.trim(),
+    kw:parseFloat(document.getElementById('m-kw').value)||7,
+    deviceCost:parseInt(document.getElementById('m-device').value)||0,
+    elecCost:parseInt(document.getElementById('m-elec').value)||0,
+    subsidy:parseInt(document.getElementById('m-sub').value)||0,
+    maint:parseInt(document.getElementById('m-maint').value)||0,
+    rent:parseInt(document.getElementById('m-rent').value)||0,
+    platform:parseInt(document.getElementById('m-platform').value)||0,
+    labor:parseInt(document.getElementById('m-labor').value)||0,
   };
-
-  btn.textContent = '저장 중...';
-  btn.style.opacity = '0.7';
-
-  try {
-    localStorage.setItem('cpo-simulator-settings', JSON.stringify(data));
-    btn.textContent = '💾 설정 저장';
-    btn.style.opacity = '1';
-    status.textContent = `✓ ${data.savedAt} 저장됨`;
-    status.style.color = '#10b981';
-    setTimeout(() => { status.textContent = `마지막 저장: ${data.savedAt}`; status.style.color = '#64748b'; }, 3000);
-  } catch(e) {
-    btn.textContent = '💾 설정 저장';
-    btn.style.opacity = '1';
-    status.textContent = '⚠ 저장 오류 (브라우저 저장소 확인 필요)';
-    status.style.color = '#ef4444';
+  if(editingModelId){
+    const idx=ST.models.findIndex(m=>m.id===editingModelId);
+    if(idx>-1) ST.models[idx]={...ST.models[idx],...data};
+  } else {
+    ST.models.push({id:uuid(),...data});
   }
+  saveState();closeModal();
+  if(activeTab==='models') renderModels();
+  if(activeTab==='dashboard') renderDashboard();
 }
 
-function loadSettings() {
-  try {
-    const raw = localStorage.getItem('cpo-simulator-settings');
-    if (!raw) return;
-    const data = JSON.parse(raw);
-
-    const fields = ['deviceCost','elecCost','subsidy','maint','rent','platform','labor','price','buyPrice','hours'];
-    const ids    = ['s-device-cost','s-elec-cost','s-subsidy','s-maint','s-rent','s-platform','s-labor','s-price','s-buy-price','s-hours'];
-    fields.forEach((f, i) => {
-      const el = document.getElementById(ids[i]);
-      if (el && data[f] !== undefined) el.value = data[f];
-    });
-
-    ['y1','y2','y3','y4','y5'].forEach(k => {
-      const el = document.getElementById(k);
-      if (el && data[k] !== undefined) el.value = data[k];
-    });
-
-    if (data.savedAt) {
-      const status = document.getElementById('save-status');
-      status.textContent = `마지막 저장: ${data.savedAt}`;
-      status.style.color = '#64748b';
-    }
-  } catch(e) {
-    // 저장된 데이터 없음 — 기본값 사용
-  }
+function deleteModel(id) {
+  const inUse=ST.channels.some(c=>c.modelId===id);
+  if(inUse){alert('이 모델을 사용하는 판매처가 있습니다.\n먼저 해당 판매처의 모델을 변경해주세요.');return;}
+  if(!confirm('이 모델을 삭제하시겠습니까?')) return;
+  ST.models=ST.models.filter(m=>m.id!==id);
+  saveState();renderModels();
+  if(activeTab==='dashboard') renderDashboard();
 }
 
-// ==================== 초기화 ====================
-loadSettings(); update();
+// =========================================================
+// MODAL - CHANNEL
+// =========================================================
+function openChannelModal(id) {
+  editingChannelId=id;
+  const ch=id?getChannelById(id):{id:null,name:'',type:'direct',modelId:ST.models[0]?.id||'',price:295,buyPrice:110,hours:35.7,colorIdx:ST.channels.length%10,installs:[0,0,0,0,0]};
+  if(!ch&&id) return;
+  const modelOpts=ST.models.map(m=>`<option value="${m.id}" ${m.id===(ch.modelId||'')? 'selected':''}>${m.name}</option>`).join('');
+  const typeOpts=Object.entries(CH_TYPES).map(([k,v])=>`<option value="${k}" ${k===ch.type?'selected':''}>${v}</option>`).join('');
+  const colorOpts=COLORS.map((c,i)=>`<option value="${i}" ${i===(ch.colorIdx||0)?'selected':''} style="background:${c}">${['파란', '초록', '노란', '보라', '하늘', '빨강', '핑크', '청록', '주황', '연두'][i]}색</option>`).join('');
+  const installs=ch.installs||[0,0,0,0,0];
+  document.getElementById('modal-body').innerHTML=`
+  <div class="modal-title">🏪 ${id?'판매처 수정':'새 판매처 추가'}</div>
+  <div class="form-section">기본 정보</div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">판매처명</label><input class="form-input" id="c-name" placeholder="예: 강남 아파트 단지" value="${ch.name||''}"></div>
+    <div class="form-group"><label class="form-label">유형</label><select class="form-select" id="c-type">${typeOpts}</select></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">충전기 모델</label><select class="form-select" id="c-model">${modelOpts||'<option value="">모델 없음</option>'}</select><div class="form-hint">모델 탭에서 먼저 모델을 추가하세요</div></div>
+    <div class="form-group"><label class="form-label">카드 색상</label><select class="form-select" id="c-color">${colorOpts}</select></div>
+  </div>
+  <div class="form-section">수익 파라미터</div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">충전 판매단가 (원/kWh)</label><input class="form-input" id="c-price" type="number" value="${ch.price}"><div class="form-hint">시장 참고: 완속 250~350원</div></div>
+    <div class="form-group"><label class="form-label">전기 구매단가 (원/kWh)</label><input class="form-input" id="c-buy" type="number" value="${ch.buyPrice}"></div>
+  </div>
+  <div class="form-group" style="max-width:280px"><label class="form-label">대당 월 평균 충전 시간</label><input class="form-input" id="c-hours" type="number" step="0.1" value="${ch.hours}"><div class="form-hint">kWh/월 = kW × 시간 (e.g. 7kW × 35.7h = 250kWh)</div></div>
+  <div class="form-section">5개년 설치 계획 (신규 대수)</div>
+  <div class="install-mini-grid" style="margin-bottom:8px">
+    ${YEARS.map((yr,i)=>`
+    <div class="install-mini">
+      <div class="install-mini-label">${yr}</div>
+      <input type="number" id="c-y${i}" value="${installs[i]||0}" min="0">
+    </div>`).join('')}
+  </div>
+  <div class="modal-footer">
+    <button class="btn-outline" onclick="closeModal()">취소</button>
+    <button class="btn-primary" onclick="saveChannel()">저장</button>
+  </div>`;
+  document.getElementById('modal-overlay').style.display='flex';
+}
+
+function saveChannel() {
+  const name=document.getElementById('c-name').value.trim();
+  if(!name){alert('판매처명을 입력해주세요.');return;}
+  const modelSel=document.getElementById('c-model');
+  if(!modelSel||!modelSel.value){alert('충전기 모델을 선택해주세요.');return;}
+  const data={
+    name,
+    type:document.getElementById('c-type').value,
+    modelId:modelSel.value,
+    colorIdx:parseInt(document.getElementById('c-color').value)||0,
+    price:parseFloat(document.getElementById('c-price').value)||0,
+    buyPrice:parseFloat(document.getElementById('c-buy').value)||0,
+    hours:parseFloat(document.getElementById('c-hours').value)||0,
+    installs:Array.from({length:5},(_,i)=>parseInt(document.getElementById('c-y'+i).value)||0),
+  };
+  if(editingChannelId){
+    const idx=ST.channels.findIndex(c=>c.id===editingChannelId);
+    if(idx>-1) ST.channels[idx]={...ST.channels[idx],...data};
+  } else {
+    ST.channels.push({id:uuid(),...data});
+  }
+  saveState();closeModal();
+  if(activeTab==='channels') renderChannels();
+  if(activeTab==='dashboard') renderDashboard();
+  if(activeTab==='analysis') renderAnalysis(currentAnalysisTab);
+}
+
+function deleteChannel(id) {
+  if(!confirm('이 판매처를 삭제하시겠습니까?')) return;
+  ST.channels=ST.channels.filter(c=>c.id!==id);
+  saveState();renderChannels();
+  if(activeTab==='dashboard') renderDashboard();
+  if(activeTab==='analysis') renderAnalysis(currentAnalysisTab);
+}
+
+// =========================================================
+// MODAL HELPERS
+// =========================================================
+function closeModal() { document.getElementById('modal-overlay').style.display='none'; }
+function closeModalOverlay(e) { if(e.target.id==='modal-overlay') closeModal(); }
+
+// =========================================================
+// COST CHART (static)
+// =========================================================
+function initCostChart() {
+  if(charts['costPie']) return;
+  charts['costPie']=new Chart(document.getElementById('costPieChart'),{
+    type:'doughnut',
+    data:{labels:['직접재료비','외주가공비','노무비','일반관리비','이윤','기타경비'],
+      datasets:[{data:[518861,94621,55941,56620,11239,138796],
+        backgroundColor:['#3b82f6','#22d3ee','#10b981','#f59e0b','#8b5cf6','#64748b'],
+        borderColor:'#161d2e',borderWidth:2,hoverOffset:8}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{color:'#94a3b8',font:{size:11},padding:12}},
+        tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${ctx.raw.toLocaleString()}원 (${((ctx.raw/876078)*100).toFixed(1)}%)`}}}}
+  });
+}
+
+// =========================================================
+// INIT
+// =========================================================
+loadState();
+renderDashboard();
+renderModels();
+renderChannels();
 </script>
 </body>
 </html>
